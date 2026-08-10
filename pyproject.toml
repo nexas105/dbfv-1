@@ -5,7 +5,7 @@ description = "Add your description here"
 requires-python = ">=3.13"
 dependencies = [
     "crispy-bootstrap5~=2025.6",
-    "django~=5.1.15",
+    "django~=6.1.0",
     "django-crispy-forms~=2.5",
     "django-email-verification~=0.3.3",
     "django-formtools~=2.6.1",
