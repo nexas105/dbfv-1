@@ -78,9 +78,9 @@ $(document).ready(function() {
             <strong>{{mailmerge_count}}</strong>
         </p>
         <p>
-            <a href="{% url 'submission-export-mailmerge-new' %}" class="btn btn-default btn-block">Neue Anträge exportieren</a>
+            <a href="{% url 'submission-export-mailmerge-new' %}" class="btn btn-secondary w-100">Neue Anträge exportieren</a>
 
-            <div class="alert alert-error">
+            <div class="alert alert-warning">
             <strong>Achtung!</strong> Die Liste kann nur
             einmal generiert werden, Datei sorgfältig aufbewahren.
             </div>
@@ -93,7 +93,7 @@ $(document).ready(function() {
     {% endif %}
 </div>
 
-<div class="well">
+<div class="p-3 bg-light rounded">
 <p>Klicken Sie auf einen Monat, um die entsprechenden Anträge zu sehen. Die Zahl in
 Klammern zeigt die Anzahl der Anträge aus dem Monat, die für den Serienbrief
 exportiert wurden.</p>
@@ -110,11 +110,11 @@ exportiert wurden.</p>
 {% endfor %}
 </div>
 
-<div class="well">
+<div class="p-3 bg-light rounded">
 <form action="">
     <h5>Schnellzugriff</h5>
-    <input type="number" id="submission_id" placeholder="Antragsnummer eingeben">
-    <input id="submission_id_submit" class="btn btn-default btn-block" type="submit" value="Zu Antrag gehen">
+    <input type="number" id="submission_id" placeholder="Antragsnummer eingeben" class="form-control mb-2">
+    <input id="submission_id_submit" class="btn btn-secondary w-100" type="submit" value="Zu Antrag gehen">
 </form>
 </div>
 

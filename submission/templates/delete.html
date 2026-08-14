@@ -13,23 +13,20 @@
         Main Content
 -->
 {% block content %}
-<div class="alert alert-error">
-<form action="{{form_action}}"
-      method="post"
-      class="form-horizontal">
+<div class="alert alert-danger">
+<form action="{{form_action}}" method="post">
     {% csrf_token %}
-    <div class="control-group">
-        <div class="controls">
-            <img src="{% static  'img/icons/warning.svg' %}"
-                 width="48"
-                 height="48"
-                 class="pull-left"
-                 alt="{% trans 'Sind Sie sicher, dass Sie dieses Objelt löschen wollen?' %}">
+    <div class="d-flex align-items-start gap-3">
+        <img src="{% static  'img/icons/warning.svg' %}"
+             width="48"
+             height="48"
+             alt="{% trans 'Sind Sie sicher, dass Sie dieses Objekt löschen wollen?' %}">
+        <div>
             <p>{% trans "Sind Sie sicher, dass Sie dieses Objekt löschen wollen? Diese Aktion kann nicht rückgängig gemacht werden." %}</p>
             <p>{{ delete_message }}</p>
         </div>
     </div>
-    {% render_form_submit 'Ja, löschen' 'btn-danger btn-block' %}
+    {% render_form_submit 'Ja, löschen' 'danger' %}
 </form>
 </div>
 {% endblock %}

@@ -2,62 +2,95 @@
 {% load i18n %}
 {% load static %}
 
+{% block browser_title %}Willkommen – DBFV Antragssystem{% endblock %}
+
 {% block content %}
-    <!-- Main hero unit for a primary marketing message or call to action -->
-    <div class="p-5 mb-4 bg-light rounded-3">
-        <h1>Willkommen!</h1>
-        <p>Sie befinden sich auf der DBFV e.V. Internetseite zur Beantragung
-            jeglicher Lizenzen. Bitte wählen Sie die Lizenzart aus und folgen Sie
-            dem Menü.
+    <!-- Hero -->
+    <div class="hero p-5 mb-5 shadow-sm">
+        <h1 class="display-6 fw-bold mb-2">Willkommen!</h1>
+        <p class="lead mb-0 text-body-secondary">
+            Beantrage deine DBFV-Lizenz – wähle unten die passende Lizenzart.
         </p>
     </div>
 
-    <!-- Example row of columns -->
-    <h3>Starterlizenz</h3>
-    {% if perms.submission.add_submissionstarter %}
-        {#% if not user.userprofile.email_verified %#}
-        {% if false %}
-            <a class="btn btn-info" href="{% url 'core:verification:confirm-email' %}">Sie müssen
-                Ihre Email bestätigen &raquo;</a>
-        {% else %}
-            <a class="btn btn-success" href="{% url 'submission-add' 'starter' %}">Antrag auf
-                Starterlizenz stellen &raquo;</a>
-        {% endif %}
-    {% else %}
-        <a href="{% url 'login' %}" class="btn btn-danger">Sie müssen sich anmelden</a>
-    {% endif %}
+    <div class="row row-cols-1 row-cols-md-3 g-4">
 
-    <!--
-    <h3 class="mt-3">Kampfrichterlizenz</h3>
-    {% if perms.submission.add_submissiongym %}
-            <p><a class="btn btn-success" href="{% url 'submission-judge-add' %}">Antrag auf
-                Kampfrichterlizenz stellen &raquo;</a></p>
-    {% else %}
-        <p><a href="{% url 'login' %}" class="btn btn-danger">Sie müssen sich anmelden</a></p>
-    {% endif %}
-    -->
+        <div class="col">
+            <div class="card license-card h-100 shadow-sm">
+                <div class="card-body d-flex flex-column p-4">
+                    <div class="icon-circle bg-success-subtle text-success mb-3">
+                        <i class="bi bi-trophy"></i>
+                    </div>
+                    <h2 class="card-title h5">Starterlizenz</h2>
+                    <p class="card-text text-body-secondary">
+                        Wettkampflizenz für Athletinnen und Athleten.
+                    </p>
+                    <div class="mt-auto">
+                        {% if perms.submission.add_submissionstarter %}
+                            <a class="btn btn-success rounded-pill px-4" href="{% url 'submission-add' 'starter' %}">
+                                Antrag stellen &raquo;
+                            </a>
+                        {% else %}
+                            <a class="btn btn-outline-primary rounded-pill px-4" href="{% url 'login' %}">
+                                Bitte melden Sie sich an
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    <h3 class="mt-3">Internationale Starts</h3>
-    {% if perms.submission.add_submissioninternational %}
-            <p>
-                <a class="btn btn-success" href="{% url 'submission-international-add' %}">
-                    Antrag für einen internationalen Start stellen &raquo;
-                </a>
-            </p>
-    {% else %}
-        <p><a href="{% url 'login' %}" class="btn btn-danger">Sie müssen sich anmelden</a></p>
-    {% endif %}
+        <div class="col">
+            <div class="card license-card h-100 shadow-sm">
+                <div class="card-body d-flex flex-column p-4">
+                    <div class="icon-circle bg-primary-subtle text-primary mb-3">
+                        <i class="bi bi-globe"></i>
+                    </div>
+                    <h2 class="card-title h5">Internationale Starts</h2>
+                    <p class="card-text text-body-secondary">
+                        Freigabe für Starts bei internationalen Wettkämpfen.
+                    </p>
+                    <div class="mt-auto">
+                        {% if perms.submission.add_submissioninternational %}
+                            <a class="btn btn-success rounded-pill px-4" href="{% url 'submission-international-add' %}">
+                                Antrag stellen &raquo;
+                            </a>
+                        {% else %}
+                            <a class="btn btn-outline-primary rounded-pill px-4" href="{% url 'login' %}">
+                                Bitte melden Sie sich an
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    <h3 class="mt-3">Studiolizenz</h3>
-    {% if perms.submission.add_submissiongym %}
-            <p>
-                <a class="btn btn-success" href="{% url 'submission-studio-add' %}">
-                    Antrag für eine Studiolizenz stellen &raquo;
-                </a>
-            </p>
-    {% else %}
-        <p><a href="{% url 'login' %}" class="btn btn-danger">Sie müssen sich anmelden</a></p>
-    {% endif %}
+        <div class="col">
+            <div class="card license-card h-100 shadow-sm">
+                <div class="card-body d-flex flex-column p-4">
+                    <div class="icon-circle bg-danger-subtle text-danger mb-3">
+                        <i class="bi bi-building"></i>
+                    </div>
+                    <h2 class="card-title h5">Studiolizenz</h2>
+                    <p class="card-text text-body-secondary">
+                        Lizenz für Studios und Vereine.
+                    </p>
+                    <div class="mt-auto">
+                        {% if perms.submission.add_submissiongym %}
+                            <a class="btn btn-success rounded-pill px-4" href="{% url 'submission-studio-add' %}">
+                                Antrag stellen &raquo;
+                            </a>
+                        {% else %}
+                            <a class="btn btn-outline-primary rounded-pill px-4" href="{% url 'login' %}">
+                                Bitte melden Sie sich an
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
 
 {% endblock %}
 
@@ -73,7 +106,7 @@
                         Bundesländer
                     </a>
                     <a class="btn btn-outline-secondary" href="{% url 'gym-list' %}">Studios</a>
-                    <a class="btn btn-outline-secondary" href="{% url 'bank-account-list' %}">Bankonten</a>
+                    <a class="btn btn-outline-secondary" href="{% url 'bank-account-list' %}">Bankkonten</a>
                     <a class="btn btn-outline-secondary" href="{% url 'email-list' %}">Manager
                         Emails</a>
                 </div>
@@ -81,14 +114,14 @@
                 <h4 class="mt-3">Anträge</h4>
                 <div class="d-grid gap-2">
                     <a class="btn btn-outline-secondary" href="{% url 'submission-list' %}">Starterlizenzen</a>
-                    <!--<a class="btn btn-outline-secondary" href="{% url 'submission-judge-list' %}">Kampfrichterizenzen</a>-->
+                    <!--<a class="btn btn-outline-secondary" href="{% url 'submission-judge-list' %}">Kampfrichterlizenzen</a>-->
                     <a class="btn btn-outline-secondary" href="{% url 'submission-studio-list' %}">Studiolizenzen</a>
                 </div>
 
             {% elif perms.submission.add_submissionstarter %}
                 <div class="d-grid gap-2">
                     <a class="btn btn-outline-secondary" href="{% url 'submission-list' %}">Starterlizenzen</a>
-                    <a class="btn btn-outline-secondary" href="{% url 'submission-judge-list' %}">Kampfrichterizenzen</a>
+                    <a class="btn btn-outline-secondary" href="{% url 'submission-judge-list' %}">Kampfrichterlizenzen</a>
                     <a class="btn btn-outline-secondary"
                        href="{% url 'submission-international-list' %}">
                         Internationale Starts

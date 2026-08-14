@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 {% load i18n static %}
-<html lang="en">
+<html lang="de">
 <head>
     <!--
      This file is part of the DBFV site.
@@ -20,39 +20,72 @@
     -->
 
     <meta charset="utf-8">
-    <title>DBFV Antragsystem</title>
+    <title>{% block browser_title %}DBFV Antragssystem{% endblock %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="">
+    <meta name="description"
+          content="Antragssystem des DBFV e.V. zur Beantragung und Verwaltung von Starter-, Studio- und Kampfrichterlizenzen.">
     <meta name="author" content="Roland Geider">
 
+    <link rel="icon" type="image/png" href="{% static 'img/DBFV-logo.png' %}">
     <link href="{% static 'node_modules/bootstrap/dist/css/bootstrap.min.css' %}" rel="stylesheet">
     <link href="{% static 'node_modules/bootstrap-icons/font/bootstrap-icons.css' %}"
           rel="stylesheet">
     <!--<link href="{% static 'css/bootstrap-custom.css' %}" rel="stylesheet">-->
     <link href="{% static 'css/token-input.css' %}" rel="stylesheet">
+
+    <style>
+        /* --- DBFV Design 2.0: app-wide layer --- */
+        body { background-color: #f6f7f9; }
+
+        main.page { padding-bottom: 3rem; }
+
+        .page-title { font-weight: 700; margin-bottom: 1.25rem; }
+        .page-title:empty { display: none; }
+
+        /* Cards */
+        .card { border: 0; border-radius: 1rem; }
+        .card.shadow-sm { box-shadow: 0 .125rem .5rem rgba(0,0,0,.06) !important; }
+
+        /* Buttons a touch softer */
+        .btn { border-radius: .5rem; }
+
+        /* Tables */
+        .table { --bs-table-bg: transparent; }
+        .table > thead th { border-bottom-width: 2px; white-space: nowrap; }
+
+        /* Navbar dropdowns */
+        .navbar .dropdown-menu {
+            border: 0;
+            border-radius: .75rem;
+            box-shadow: 0 .5rem 1.5rem rgba(0,0,0,.10);
+        }
+
+        /* Reusable pieces (index + future pages) */
+        .hero {
+            background: linear-gradient(135deg, #f8f9fa 0%, #eef1f4 100%);
+            border-left: 4px solid #b3121b;
+            border-radius: 1rem;
+        }
+        .license-card { transition: transform .18s ease, box-shadow .18s ease; }
+        .license-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 .75rem 1.75rem rgba(0,0,0,.12) !important;
+        }
+        .icon-circle {
+            width: 3.25rem; height: 3.25rem;
+            display: inline-flex; align-items: center; justify-content: center;
+            border-radius: 50%; font-size: 1.5rem;
+        }
+    </style>
 </head>
 
 <body>
-<div class="container">
-    <div class="row">
-        <div class="col-md-2" id="logo">
-            <a href="http://www.dbfv.de"
-               target="_blank">
-                <img src="{% static 'img/DBFV-logo.png' %}"
-                     width="142"
-                     height="143"
-                     alt="Logo des DBFV"></a>
-        </div>
-
-        <div class="col-md-10">
-            <h1>Antragssystem des DBFV e.V.</h1>
-        </div>
-    </div>
-</div>
-
-<nav class="navbar navbar-expand-lg bg-light">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="/">DBFV</a>
+<nav class="navbar navbar-expand-lg bg-white shadow-sm mb-4" style="border-bottom: 3px solid #b3121b;">
+    <div class="container">
+        <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+            <img src="{% static 'img/DBFV-logo.png' %}" width="44" height="44" alt="Logo des DBFV">
+            <span class="fw-bold">DBFV <span class="fw-normal text-body-secondary">Antragssystem</span></span>
+        </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                 data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
                 aria-expanded="false" aria-label="Toggle navigation">
@@ -76,7 +109,7 @@
                             <!--
                             <li>
                                 <a class="dropdown-item" href="{% url 'submission-judge-list' %}">
-                                    Kampfrichterizenzen
+                                    Kampfrichterlizenzen
                                 </a>
                             </li>
                             -->
@@ -190,11 +223,11 @@
 </nav>
 
 
-<div class="container">
-    <h2>{% block title %}{% endblock %}</h2>
+<main class="page container">
+    <h2 class="page-title">{% block title %}{% endblock %}</h2>
 
     {% for message in messages %}
-        <div class="alert alert-success" role="alert">
+        <div class="alert alert-{{ message.tags|default:'info' }}" role="alert">
           {{message}}
         </div>
     {% endfor %}
@@ -207,7 +240,7 @@
             {% block sidebar %}{% endblock %}
         </div>
     </div>
-</div>
+</main>
 
 <!--
     <footer class="footer navbar navbar-fixed-bottom">

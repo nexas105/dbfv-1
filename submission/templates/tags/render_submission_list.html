@@ -15,7 +15,7 @@
         {% for submission in submission_list %}
             {% if submission_type == 'starter' %}
                 {% ifchanged submission.gym.state %}
-                    <tr class="info">
+                    <tr class="table-info">
                         <th colspan="5">
                             {{ submission.gym.state }}
                         </th>
@@ -36,24 +36,31 @@
                 {% endif %}
                 <td>
                     {% if submission.submission_status == SUBMISSION_STATUS_BEWILLIGT %}
-                        <i class="bi bi-check"></i>
+                        <span class="badge text-bg-success">
+                            <i class="bi bi-check"></i> {{ submission.get_submission_status_bv_display }}
+                        </span>
                     {% elif submission.submission_status == SUBMISSION_STATUS_ABGELEHNT %}
-                        <i class="bi bi-x"></i>
+                        <span class="badge text-bg-danger">
+                            <i class="bi bi-x"></i> {{ submission.get_submission_status_bv_display }}
+                        </span>
                     {% else %}
-                        <i class="bi bi-clock"></i>
+                        <span class="badge text-bg-secondary">
+                            <i class="bi bi-clock"></i> {{ submission.get_submission_status_bv_display }}
+                        </span>
                     {% endif %}
-                    {{ submission.get_submission_status_bv_display }}
                 </td>
                 <td>
-                    <a href="{% url url_submission_view submission.id %}" title="Anzeigen">
+                    <a href="{% url url_submission_view submission.id %}"
+                       title="Anzeigen" aria-label="Antrag {{ submission.id }} anzeigen">
                         <i class="bi bi-eye"></i>
                     </a>
                     {% if user_type == USER_TYPE_BUNDESVERBAND %}
                         <a href="{% url url_submission_edit submission.id %}"
-                           title="Status bearbeiten">
+                           title="Status bearbeiten" aria-label="Antrag {{ submission.id }} bearbeiten">
                             <i class="bi bi-pencil"></i>
                         </a>
-                        <a href="{% url url_submission_delete submission.id %}" title="Löschen">
+                        <a href="{% url url_submission_delete submission.id %}"
+                           title="Löschen" aria-label="Antrag {{ submission.id }} löschen">
                             <i class="bi bi-trash"></i>
                         </a>
                     {% endif %}

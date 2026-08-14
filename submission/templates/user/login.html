@@ -4,6 +4,7 @@
 {% load crispy_forms_tags %}
 
 {% block title %} {% trans "Anmelden" %}{% endblock %}
+{% block browser_title %}Anmelden – DBFV Antragssystem{% endblock %}
 
 {% block content %}
 {% if not user.is_authenticated %}
@@ -12,7 +13,7 @@
 {% endblock %}
 
 {% block sidebar %}
-<div class="well">
+<div class="p-3 bg-light rounded">
 <h4>Kein Account?</h4>
 
 <a href="{% url 'registration' %}">Registrieren</a>
