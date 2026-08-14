@@ -1,0 +1,8 @@
+Neue API-Key-Anfrage über das Antragssystem:
+
+Name:            {{ name }}
+Organisation:    {{ organization }}
+E-Mail:          {{ email }}
+
+Verwendungszweck:
+{{ intended_use }}

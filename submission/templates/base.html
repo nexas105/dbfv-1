@@ -136,6 +136,20 @@
                                 </a>
                             </li>
                             -->
+                            {% if user.is_staff %}
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li>
+                                <h6 class="dropdown-header"> API</h6>
+                            </li>
+                            <li>
+                                <a class="dropdown-item"
+                                   href="{% url 'admin:api_scopedapikey_changelist' %}">
+                                    API-Keys
+                                </a>
+                            </li>
+                            {% endif %}
                         </ul>
                     </li>
                 {% endif %}
@@ -221,6 +235,7 @@
                 </li>
             </ul>
             <ul class="nav navbar-nav navbar-right">
+                <li><a class="small text-muted" href="{% url 'api-key-request' %}">API-Key beantragen</a></li>
                 <li><a href="{% url 'impressum' %}">Impressum</a></li>
             </ul>
         </div>

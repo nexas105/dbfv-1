@@ -1,7 +1,32 @@
 # Django settings for dbfv project.
 
-DEBUG = True
+# Standard Library
+import os
+
+# Secure by default. Local development must opt in via the local settings
+# (root settings.py sets DEBUG = True).
+DEBUG = False
 TEMPLATE_DEBUG = DEBUG
+
+# HTTPS/transport hardening. TLS is not guaranteed by this repository (the
+# bundled Apache config listens on :80); it must be terminated by the operator's
+# reverse proxy. The whole HTTPS posture is therefore opt-in via DJANGO_SECURE=1,
+# to be set ONLY once TLS termination is confirmed. This keeps an HTTP-only
+# deployment working (secure cookies over plain HTTP would break login) and,
+# crucially, avoids trusting a spoofable X-Forwarded-Proto header when there is
+# no trusted TLS proxy in front.
+_SECURE = os.environ.get('DJANGO_SECURE') == '1'
+if _SECURE:
+    # Only honor the proxy's TLS header when we've declared a trusted TLS proxy.
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SESSION_COOKIE_SECURE = _SECURE
+CSRF_COOKIE_SECURE = _SECURE
+SECURE_SSL_REDIRECT = _SECURE
+SECURE_HSTS_SECONDS = 31536000 if _SECURE else 0
+SECURE_HSTS_INCLUDE_SUBDOMAINS = _SECURE
+SECURE_HSTS_PRELOAD = _SECURE
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
 
 ADMINS = (
     # ('Your Name', 'your_email@example.com'),
@@ -104,13 +129,17 @@ TEMPLATES = [
 
 MIDDLEWARE = (
     'django.middleware.common.CommonMiddleware',
+    # Outer: audits final API responses (incl. 429 from the limiter below).
+    'api.middleware.ApiAuditMiddleware',
+    # Runs before DRF permissions so invalid API keys are rate-limited too.
+    'api.middleware.ApiPreAuthRateLimitMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
 
-    # Uncomment the next line for simple clickjacking protection:
-    # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # Clickjacking protection (X-Frame-Options: DENY)
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
     #'debug_toolbar.middleware.DebugToolbarMiddleware',
 )
 
@@ -147,7 +176,43 @@ INSTALLED_APPS = (
     # Forms
     'crispy_forms',
     'crispy_bootstrap5',
+
+    # REST API
+    'rest_framework',
+    'rest_framework_api_key',
+    'django_filters',
+    'drf_spectacular',
+    'api',
 )
+
+REST_FRAMEWORK = {
+    # Every endpoint requires a valid API key by default; write needs write_allowed.
+    'DEFAULT_PERMISSION_CLASSES': ['api.permissions.ScopedAPIKeyPermission'],
+    'DEFAULT_AUTHENTICATION_CLASSES': [],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 50,
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',
+        'rest_framework.filters.SearchFilter',
+        'rest_framework.filters.OrderingFilter',
+    ],
+    # Throttle per API key (falls back to IP when no key is present).
+    'DEFAULT_THROTTLE_CLASSES': ['api.throttling.APIKeyRateThrottle'],
+    'DEFAULT_THROTTLE_RATES': {'apikey': '1000/hour'},
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+# The IP limit runs before key validation; successful requests are additionally
+# limited per API key by APIKeyRateThrottle.
+API_PREAUTH_RATE_LIMIT = '120/minute'
+API_KEY_REQUEST_RATE_LIMIT = '5/hour'
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'DBFV API',
+    'DESCRIPTION': 'REST-API des DBFV-Antragssystems (Lizenzverwaltung).',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+}
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = 'bootstrap5'
@@ -189,13 +254,23 @@ LOGGING = {
             'level': 'ERROR',
             'filters': ['require_debug_false'],
             'class': 'django.utils.log.AdminEmailHandler'
-        }
+        },
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
     },
     'loggers': {
         'django.request': {
             'handlers': ['mail_admins'],
             'level': 'ERROR',
             'propagate': True,
+        },
+        # API audit trail (usage, 403/429, key revocations). Ships to stdout;
+        # route it to a file/collector in the deployment as needed.
+        'dbfv.audit': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
         },
     }
 }

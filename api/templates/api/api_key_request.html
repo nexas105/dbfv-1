@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}API-Key beantragen{% endblock %}
+
+{% block content %}
+<p>
+    Du möchtest programmatisch auf das DBFV-Antragssystem zugreifen? Fülle das
+    Formular aus – wir prüfen die Anfrage und melden uns per E-Mail.
+</p>
+
+<form method="post" action="{% url 'api-key-request' %}">
+    {% csrf_token %}
+    {{ form|crispy }}
+    <button type="submit" class="btn btn-primary">Anfrage senden</button>
+</form>
+{% endblock %}
