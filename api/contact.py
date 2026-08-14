@@ -1,4 +1,7 @@
 """Public "request an API key" contact form."""
+# Standard Library
+import logging
+
 # Django
 from django import forms
 from django.conf import settings
@@ -12,6 +15,8 @@ from django.template.loader import render_to_string
 from api.client_ip import client_ip
 from api.rate_limit import check_rate_limit
 from submission.models import ManagerEmail
+
+logger = logging.getLogger('dbfv.audit')
 
 
 class ApiKeyRequestForm(forms.Form):
@@ -43,17 +48,30 @@ def api_key_request(request):
         form = ApiKeyRequestForm(request.POST)
         if form.is_valid():
             recipients = list(ManagerEmail.objects.values_list('email', flat=True))
+            sent = 0
             if recipients:
-                send_mail(
-                    subject=f'API-Key-Anfrage: {form.cleaned_data["organization"]}',
-                    message=render_to_string('api/api_key_request_email.txt', form.cleaned_data),
-                    from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@dbfv.com'),
-                    recipient_list=recipients,
-                    fail_silently=True,
+                try:
+                    sent = send_mail(
+                        subject=f'API-Key-Anfrage: {form.cleaned_data["organization"]}',
+                        message=render_to_string('api/api_key_request_email.txt', form.cleaned_data),
+                        from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@dbfv.com'),
+                        recipient_list=recipients,
+                        fail_silently=False,
+                    )
+                except Exception:
+                    logger.exception('API-Key-Anfrage konnte nicht zugestellt werden')
+            else:
+                logger.warning('API-Key-Anfrage ohne ManagerEmail-Empfänger verworfen')
+            if sent:
+                messages.success(
+                    request, 'Danke, deine Anfrage wurde übermittelt. Wir melden uns per E-Mail.'
                 )
-            messages.success(
-                request, 'Danke, deine Anfrage wurde übermittelt. Wir melden uns per E-Mail.'
-            )
+            else:
+                messages.error(
+                    request,
+                    'Deine Anfrage konnte gerade nicht zugestellt werden. Bitte versuche es '
+                    'später erneut oder wende dich direkt an den Verband.',
+                )
             return redirect('api-key-request')
     else:
         form = ApiKeyRequestForm()

@@ -47,6 +47,10 @@ class ScopedAPIKeyPermission(BaseHasAPIKey):
         view_model = getattr(getattr(view, 'queryset', None), 'model', None)
         if view_model in SENSITIVE_MODELS and not api_key.sensitive_access:
             return False
+        # DELETE on open Stammdaten (Gym/State/Country) cascades into sensitive
+        # submissions, so a plain write key must not delete anything.
+        if request.method == 'DELETE' and not api_key.sensitive_access:
+            return False
         # Views may demand the sensitive scope explicitly (e.g. bulk exports).
         if getattr(view, 'requires_sensitive', False) and not api_key.sensitive_access:
             return False

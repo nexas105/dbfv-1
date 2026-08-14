@@ -60,3 +60,24 @@ Format angelehnt an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 - Audit-Logging aller API-Zugriffe (Logger `dbfv.audit`): Key-Präfix, IP,
   Methode, Pfad, Status; `403`/`429` und Key-Widerrufe als Warnung. Ohne
   Key-Secret, Request-Body oder Query-Zeichenkette (keine Suchdaten).
+
+### Behoben
+- Review-Fixes zu PR #157 (automatischer Copilot-Review):
+  - Scope-Umgehung geschlossen: `DELETE` erfordert jetzt `sensitive_access`.
+    Zuvor konnte ein reiner Schreib-Key offene Stammdaten (Gym/State/Country)
+    löschen, deren `CASCADE` sensible Anträge mitgelöscht hätte
+    (`api/permissions.py`).
+  - Submission-Endpoints (`SubmissionStarter/International/Gym/Judge`) sind jetzt
+    read-only: `POST` lief zuvor in einen `IntegrityError` (Feld `user`
+    `editable=False`, unter API-Key-Auth kein Request-User) und `PATCH` auf den
+    Status umging den Fach-Workflow (z. B. Gym-Aktivierung bei Bewilligung)
+    (`api/views.py`).
+  - CSV-Formula-Injection-Schutz (`csv_safe`) jetzt auch in den TSV-Exporten
+    `submission/views/submissions.py` und `submission/views/gym.py`; zuvor nur in
+    `BaseCsvExportView`.
+  - „API-Key beantragen"-Formular meldet Erfolg nur noch bei tatsächlich
+    zugestellter E-Mail. Zuvor wurde auch ohne Empfänger oder bei Zustellfehler
+    (`fail_silently=True`) „übermittelt" gemeldet und die Anfrage verworfen;
+    jetzt `fail_silently=False`, Fehler/leerer Empfängerkreis werden über
+    `dbfv.audit` geloggt und dem Absender als Fehlermeldung gezeigt
+    (`api/contact.py`).

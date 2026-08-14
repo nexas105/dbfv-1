@@ -41,6 +41,23 @@ class ScopedAPIKeyPermissionTest(APITestCase):
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
         self.assertTrue(Country.objects.filter(name='France').exists())
 
+    def test_submission_endpoint_is_read_only(self):
+        # Submissions expose no write actions (user field editable=False,
+        # status changes must run through the domain workflow).
+        _, key = ScopedAPIKey.objects.create_key(
+            name='sw', write_allowed=True, sensitive_access=True
+        )
+        self._auth(key)
+        res = self.client.post('/api/v1/submissionstarter/', {}, format='json')
+        self.assertEqual(res.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def test_delete_requires_sensitive_access(self):
+        # DELETE on open Stammdaten cascades into sensitive submissions.
+        self._auth(self.rw)
+        country = Country.objects.create(name='Italy')
+        res = self.client.delete(f'/api/v1/country/{country.pk}/')
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+
     def test_ip_allowlist_blocks_foreign_ip(self):
         _, key = ScopedAPIKey.objects.create_key(name='ip', allowed_ips='10.0.0.1')
         self._auth(key)

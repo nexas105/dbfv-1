@@ -18,8 +18,6 @@ from submission.models import (
 
 # All models exposed via CRUD. Access per key is configurable: read for any
 # valid key, write only when the key has write_allowed set.
-# ponytail: submission write may need fields the model marks editable=False
-# (e.g. user). Primary use is read; extend serializers if write is needed.
 API_MODELS = [
     Gym,
     State,
@@ -33,6 +31,14 @@ API_MODELS = [
     SubmissionGym,
     SubmissionJudge,
 ]
+
+# Submissions are read-only via the API: their `user` field is editable=False
+# and gets no request user under API-key auth (create → IntegrityError), and
+# status changes must run through the domain workflow (e.g. Gym activation on
+# approval), which a generic serializer.save() would bypass.
+READ_ONLY_MODELS = {
+    SubmissionStarter, SubmissionInternational, SubmissionGym, SubmissionJudge,
+}
 
 
 # Field types django-filter can filter on with an exact lookup.
@@ -51,9 +57,10 @@ def _serializer_for(model):
 
 def _viewset_for(model):
     fields = model._meta.fields  # concrete local fields (FKs by name, no m2m/reverse)
+    base = viewsets.ReadOnlyModelViewSet if model in READ_ONLY_MODELS else viewsets.ModelViewSet
     return type(
         f'{model.__name__}ViewSet',
-        (viewsets.ModelViewSet,),
+        (base,),
         {
             'queryset': model._default_manager.all().order_by('pk'),
             'serializer_class': _serializer_for(model),

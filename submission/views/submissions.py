@@ -50,6 +50,7 @@ from submission.views.generic_views import (
     BaseSubmissionListView,
     BaseSubmissionUpdateView,
     DbfvFormMixin,
+    csv_safe,
     DbfvViewMixin,
     get_overview_context,
 )
@@ -287,7 +288,7 @@ def export_csv(request):
             creation_date__year=today.year,
             submission_status=SubmissionStarter.SUBMISSION_STATUS_BEWILLIGT
     ):
-        writer.writerow([submission.get_name, submission.email])
+        writer.writerow([csv_safe(submission.get_name), csv_safe(submission.email)])
 
     filename = f'attachment; filename=Email-export-Starterlizenzen-{today.year}-{today}.csv'
     response['Content-Disposition'] = filename

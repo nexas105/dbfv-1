@@ -30,6 +30,7 @@ from submission.models import (
 from submission.views.generic_views import (
     DbfvFormMixin,
     DbfvViewMixin,
+    csv_safe,
 )
 
 
@@ -123,7 +124,7 @@ def export_csv(request):
 
     today = datetime.date.today()
     for gym in Gym.objects.filter(is_active=True):
-        writer.writerow([gym.state.short_name, gym.name, gym.email])
+        writer.writerow([csv_safe(gym.state.short_name), csv_safe(gym.name), csv_safe(gym.email)])
 
     filename = f'attachment; filename=Email-export-aktive-Studios-{today}.csv'
     response['Content-Disposition'] = filename
