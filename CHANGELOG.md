@@ -81,3 +81,18 @@ Format angelehnt an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
     jetzt `fail_silently=False`, Fehler/leerer Empfängerkreis werden über
     `dbfv.audit` geloggt und dem Absender als Fehlermeldung gezeigt
     (`api/contact.py`).
+  - OpenAPI-Schema stimmt jetzt mit den tatsächlichen Responses überein:
+    Envelope-Serializer für `licenses/lookup/` (`{year, valid, matches}`) und
+    `licenses/valid/` (`{count, next, previous, results}`) statt eines bloßen
+    Arrays; generierte Clients deserialisieren wieder korrekt (`api/licenses.py`).
+  - OpenAPI-Security-Scheme (`ApiKeyAuth`, Header `Authorization: Api-Key …`)
+    deklariert und global auf alle Operationen angewandt; zuvor beschrieb das
+    Schema geschützte Endpunkte ohne den nötigen Header
+    (`dbfv/settings_global.py`).
+  - Massen-Export `licenses/valid/` paginiert jetzt auf DB-Ebene (Count +
+    Fenster-Slice pro Modell) statt erst alle Zeilen aller vier Tabellen in den
+    Speicher zu laden (`api/licenses.py`).
+  - Audit-Middleware ist wieder äußerste Middleware (vor `CommonMiddleware`),
+    damit `APPEND_SLASH`-Redirects (301) und direkt von `CommonMiddleware`
+    erzeugte Antworten mit dem client-sichtbaren Status geloggt werden
+    (`dbfv/settings_global.py`).

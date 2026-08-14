@@ -128,9 +128,10 @@ TEMPLATES = [
 ]
 
 MIDDLEWARE = (
-    'django.middleware.common.CommonMiddleware',
-    # Outer: audits final API responses (incl. 429 from the limiter below).
+    # Outermost: audits the final response, incl. CommonMiddleware redirects
+    # (APPEND_SLASH 301) and the 429 from the limiter below.
     'api.middleware.ApiAuditMiddleware',
+    'django.middleware.common.CommonMiddleware',
     # Runs before DRF permissions so invalid API keys are rate-limited too.
     'api.middleware.ApiPreAuthRateLimitMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -212,6 +213,19 @@ SPECTACULAR_SETTINGS = {
     'DESCRIPTION': 'REST-API des DBFV-Antragssystems (Lizenzverwaltung).',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
+    # Auth runs as a DRF permission (no authentication class to infer from), so
+    # declare the API-key scheme explicitly and apply it to every operation.
+    'APPEND_COMPONENTS': {
+        'securitySchemes': {
+            'ApiKeyAuth': {
+                'type': 'apiKey',
+                'in': 'header',
+                'name': 'Authorization',
+                'description': 'Format: `Api-Key <PREFIX>.<SECRET>`',
+            },
+        },
+    },
+    'SECURITY': [{'ApiKeyAuth': []}],
 }
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
