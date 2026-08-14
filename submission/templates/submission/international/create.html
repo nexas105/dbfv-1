@@ -3,192 +3,101 @@
 
 {% block title %}Antrag auf internationalen Start{% endblock %}
 
-{% block scripts %}
-    <script>
-        $(document).ready(function () {
-            $('#form-championships').hide();
-
-            $('.gym-select').click(function (e) {
-                e.preventDefault();
-                const gym_id = $(this).data('gym-id');
-                const gym_state = $(this).data('gym-state');
-
-                $('#ajax_id_gym').val(gym_id);
-                $('#id_gym').val(gym_id);
-
-                if (gym_state == 10) {
-                    $('#form-championships').show();
-                } else {
-                    $('#form-championships').hide();
-                }
-
-                // Scroll to element
-                $('html, body').animate({
-                    scrollTop: $("#header-form2").offset().top
-                }, 1000);
-            });
-        });
-    </script>
-    <style>
-        .accordion-heading {
-            background-color: #f2f2f2;
-        }
-
-        .accordion-heading a {
-            color: black;
-        }
-    </style>
-{% endblock %}
-
 {% block content %}
-    <p>Es gelten ab sofort folgende Vorgaben: (Stand:01.02.2024)</p>
-    <ul>
-        <li>
-            Bei internationalen Meisterschaften im Ausland (auch Diamond Cups,
-            Legacy Cup, IFBB-Elite Pro Events u.a.) sind alle Athletinnen/Athleten
-            startberechtigt, die bei einer Deutschen oder Int. Deutschen
-            Meisterschaft teilgenommen haben.
-        </li>
-        <li>
-            Diese Regelung gilt ab sofort und findet auch auf zurückliegende Jahre Anwendung.
-        </li>
-        <li>    
-            <b>Anmeldeschluss ist spätestens ein Monat vor dem Termin der Meisterschaft.</b>
-        </li>
-    </ul>
-    <p>
-        Für die Teilnahm an einer EM- oder WM-Qualifikation sowie für einen Start bei
-        der Arnold's Classic gelten ab sofort folgende Vorgaben:
-    </p>
-    <ul>
-        <li>
-            Top 6 Platzierung bei einer DM oder Int. DM (hierbei sind nur die Meisterschaften
-            des DBFV e.V. am Ende der Frühjahrs- bzw. Herbstsaison gemeint)
-        </li>
-        <li>
-            Die gennanten Platzierungen müssen innerhalb der letzten fünf Jahre erreicht
-            worden sein.
-        </li>
-        <li>
-            Ebenfalls können Nationalteam-Mitglieder der letzen fünf Jahre an den gennanten
-            Qualifikationen teilnehemen.
-        </li>
-        <li>
-            Für Junioren- und Masters-Athleten gilt, dass diese ebenfalls innerhalb der letzten
-            fünf Jahre bei der Junioren- oder Masters Deutschen oder Int. Deutschen Meisterschaft
-            des DBFV e.V. eine Top 6 Platzierung vorweisen müssen (die jeweilige, erreichte
-            Qualifikation gilt nur für die Klasse, in der man die Platzierung erreicht hat (heißt,
-            dass sich z.B. Juniorenathleten beim Erreichen der Altersgrenzen dann bei den
-            Männern oder Frauen erneut qualifizieren müssen))
-        </li>
-    </ul>
-    
-    <p><b>Anmeldeschluss ist spätestens einen Monat vor dem Termin der Meisterschaft</b></p>
-        
-    <p>Vorraussetzung einer Anmeldung:</p>
-    <ul>
-        <li>
-            Bei jeder Anmeldung ist eine gültige Starterlizenz notwendig.
-        </li>
-        <li>
-            Jede/r Starter/in muss rechtzeitig auf der Homepage <a href="https://dbfv.de">dbfv.de</a>
-            den Antrag für internationale Starts beantragen.
-        </li>
-        <li>
-            Nach Überprüfung der Voraussetzungen erhält jede/r Antragsteller/in
-            eine Bestätigung mit spezifischen Informationen per E-Mail zugestellt.
-        </li>
-        <li>
-            Die Anmeldung beim Veranstalter kann ausschließlich durch den DBFV e.V. erfolgen.
-        </li>
-        <li>
-            Selbstanmeldungen beim Veranstalter sind unzulässig. Darüber hinaus liegt
-            die endgültige Zustimmung beim Veranstalter.
-        </li>
-        <li>
-            Bei jeder Anmeldung ist eine gültige Starterlizenz notwendig.
-        </li>
-        <li>
-            Je nach Ausrichtungsland sind die jeweils gültigen Ein- und Ausreisebestimmung zu beachten.
-        </li>
-        <li>
-            Weitere Anfragen oder Infos können über die Geschäftsstelle unter
-            <a href="mailto:info@dbfv.de">info@dbfv.de</a> oder über die Sportreferentin
-            unter <a href="mailto:margret.netack@t-online.de">margret.netack@t-online.de</a>
-            gestellt oder eingeholt werden
-        </li>
-        <li>
-            Link zu den Wettkampfregeln des Weltverbandes IFBB: <a href="https://ifbb.com/rules-2/">RULES (ifbb.com)</a>
-        </li>
-    </ul>
+    <div class="wizard" data-wizard>
+        <ol class="wizard-progress">
+            <li>Voraussetzungen</li>
+            <li>Studio</li>
+            <li>Persönliches</li>
+            <li>Wettkampf</li>
+            <li>Bestätigung</li>
+        </ol>
 
-    <p>Die nachfolgenden Angaben habe ich nach bestem Wissen und Gewissen gemacht und
-        bestätige sie mit dem Absenden des Formulars. Unvollständige oder fehlerhafte
-        führen zu fehlerhaften Daten. Eine Bearbeitung ist dann
-        aus technischen Gründen nicht möglich.</p>
-
-    <h4>1. Studio aus Ihrem Landesverband auswählen</h4>
-    <div class="accordion" id="accordion">
-        {% for state in states_list %}
-            <div class="accordion-item">
-                <h2 class="accordion-header" id="heading{{ state.pk }}">
-                    <button class="accordion-button" type="button" data-bs-toggle="collapse"
-                            data-bs-target="#collapse{{ state.pk }}" aria-expanded="true"
-                            aria-controls="collapse{{ state.pk }}">
-                        {{ state }}
-                    </button>
-                </h2>
-                <div id="collapse{{ state.pk }}" class="accordion-collapse collapse "
-                     aria-labelledby="heading{{ state.pk }}" data-bs-parent="#accordion">
-                    <div class="accordion-body">
-                        {% for gym in state.gym_set.all %}
-                            {% if gym.is_active %}
-                                <a id="gym-{{ gym.id }}"
-                                   class="gym-select"
-                                   data-gym-id="{{ gym.id }}"
-                                   data-gym-state="{{ gym.state.id }}"
-                                   href="#">{{ gym.name }} ({{ gym.city }})</a><br>
-                            {% endif %}
-                        {% endfor %}
-                    </div>
-                </div>
+        <div class="wizard-step wstep-0">
+            <h4 class="wizard-step-title">Voraussetzungen &amp; Anmeldebestimmungen</h4>
+            <p class="text-body-secondary">Stand: 01.02.2024 — bitte vollständig lesen und bestätigen.</p>
+            <div class="border rounded p-3 mb-3" style="max-height: 22rem; overflow-y: auto;">
+            <ul>
+                <li>Bei internationalen Meisterschaften im Ausland (auch Diamond Cups,
+                    Legacy Cup, IFBB-Elite Pro Events u.a.) sind alle Athletinnen/Athleten
+                    startberechtigt, die bei einer Deutschen oder Int. Deutschen
+                    Meisterschaft teilgenommen haben.</li>
+                <li>Diese Regelung gilt ab sofort und findet auch auf zurückliegende Jahre Anwendung.</li>
+                <li><b>Anmeldeschluss ist spätestens ein Monat vor dem Termin der Meisterschaft.</b></li>
+            </ul>
+            <p>Für die Teilnahme an einer EM- oder WM-Qualifikation sowie für einen Start bei
+                der Arnold's Classic gelten ab sofort folgende Vorgaben:</p>
+            <ul>
+                <li>Top 6 Platzierung bei einer DM oder Int. DM (hierbei sind nur die Meisterschaften
+                    des DBFV e.V. am Ende der Frühjahrs- bzw. Herbstsaison gemeint)</li>
+                <li>Die genannten Platzierungen müssen innerhalb der letzten fünf Jahre erreicht worden sein.</li>
+                <li>Ebenfalls können Nationalteam-Mitglieder der letzten fünf Jahre an den genannten
+                    Qualifikationen teilnehmen.</li>
+                <li>Für Junioren- und Masters-Athleten gilt, dass diese ebenfalls innerhalb der letzten
+                    fünf Jahre bei der Junioren- oder Masters Deutschen oder Int. Deutschen Meisterschaft
+                    des DBFV e.V. eine Top 6 Platzierung vorweisen müssen (die jeweilige, erreichte
+                    Qualifikation gilt nur für die Klasse, in der man die Platzierung erreicht hat).</li>
+            </ul>
+            <p><b>Anmeldeschluss ist spätestens einen Monat vor dem Termin der Meisterschaft.</b></p>
+            <p>Voraussetzung einer Anmeldung:</p>
+            <ul>
+                <li>Bei jeder Anmeldung ist eine gültige Starterlizenz notwendig.</li>
+                <li>Jede/r Starter/in muss rechtzeitig auf der Homepage
+                    <a href="https://dbfv.de">dbfv.de</a> den Antrag für internationale Starts beantragen.</li>
+                <li>Nach Überprüfung der Voraussetzungen erhält jede/r Antragsteller/in
+                    eine Bestätigung mit spezifischen Informationen per E-Mail zugestellt.</li>
+                <li>Die Anmeldung beim Veranstalter kann ausschließlich durch den DBFV e.V. erfolgen.</li>
+                <li>Selbstanmeldungen beim Veranstalter sind unzulässig. Darüber hinaus liegt
+                    die endgültige Zustimmung beim Veranstalter.</li>
+                <li>Je nach Ausrichtungsland sind die jeweils gültigen Ein- und Ausreisebestimmungen zu beachten.</li>
+                <li>Weitere Anfragen oder Infos über die Geschäftsstelle unter
+                    <a href="mailto:info@dbfv.de">info@dbfv.de</a> oder die Sportreferentin
+                    unter <a href="mailto:margret.netack@t-online.de">margret.netack@t-online.de</a>.</li>
+                <li>Wettkampfregeln des Weltverbandes IFBB:
+                    <a href="https://ifbb.com/rules-2/">RULES (ifbb.com)</a></li>
+            </ul>
+            <p class="mb-0 text-body-secondary">Die nachfolgenden Angaben habe ich nach bestem Wissen und
+                Gewissen gemacht und bestätige sie mit dem Absenden des Formulars.</p>
             </div>
-        {% endfor %}
-    </div>
-
-    <h4 id="header-form2" class="mt-3">2. Stammdaten ausfüllen</h4>
-
-    {% if form.gym.errors %}
-        <div class="control-group error">
-            <div class="controls">
-            <span class="help-inline">
-                Bitte wählen Sie ein Studio aus der Liste aus
-            </span>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="req-ack" required>
+                <label class="form-check-label" for="req-ack">
+                    Ich habe die Voraussetzungen gelesen und erfülle sie.
+                </label>
             </div>
         </div>
-    {% endif %}
-    <input type="hidden" name="gym" id="ajax_id_gym" value="{{ form.gym.value }}">
 
-    {% crispy form %}
+        <div class="wizard-step wstep-1">
+            <h4 class="wizard-step-title">Studio auswählen</h4>
+            <p class="text-body-secondary">
+                Suchen Sie Ihr Studio direkt über das Suchfeld oder grenzen Sie die
+                Liste optional nach Bundesland ein.
+            </p>
+            {% include "tags/studio_picker.html" %}
+        </div>
 
+        {% crispy form %}
 
-    <div class="col-md-offset-3 col-md-9">
-        <p>Verspätet gestellte Anträge können nur in Ausnahmefällen angenommen werden.</p>
-        <p>Die Wettkampfregeln bzw. Beschlüsse des DBFV e.V. sind für Sie bindend.</p>
-        <p>Für die Genehmigung des Antrags ist der jeweilige Landesverband zuständig.</p>
+        {% include "tags/wizard.html" %}
     </div>
-    
 
+    <div class="mt-4 text-body-secondary">
+        <p class="mb-1">Verspätet gestellte Anträge können nur in Ausnahmefällen angenommen werden.</p>
+        <p class="mb-1">Die Wettkampfregeln bzw. Beschlüsse des DBFV e.V. sind für Sie bindend.</p>
+        <p class="mb-0">Für die Genehmigung des Antrags ist der jeweilige Landesverband zuständig.</p>
+    </div>
 {% endblock %}
 
 {% block sidebar %}
-<div class="sidebar-box">
-    <h4>Bearbeitungsgebühr</h4>
-    <p>
-        Die Bearbeitungsgebühr in Höhe von {{ fee }}€ pro internationalem Start ist im Voraus zu entrichten.
-        Bitte neben dem Namen, der Antragsnummer auch die anvisierte Meisterschaft benennen.
-        Die finale Bearbeitung erfolgt erst nach Eingang der Gebühr!
-    </p>
-    <p>Bei einer Anmeldung nach dem Anmeldeschluss fällt eine zusätzliche Bearbeitungsgebühr von 30€ an.</p>
-</div>
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h5 class="card-title">Bearbeitungsgebühr</h5>
+            <p class="card-text">
+                Die Bearbeitungsgebühr in Höhe von {{ fee }}€ pro internationalem Start ist im Voraus zu entrichten.
+                Bitte neben dem Namen und der Antragsnummer auch die anvisierte Meisterschaft benennen.
+                Die finale Bearbeitung erfolgt erst nach Eingang der Gebühr!
+            </p>
+            <p class="card-text mb-0">Bei einer Anmeldung nach dem Anmeldeschluss fällt eine zusätzliche Bearbeitungsgebühr von 30€ an.</p>
+        </div>
+    </div>
 {% endblock %}

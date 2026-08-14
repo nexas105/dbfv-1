@@ -3,5 +3,10 @@
 settings.py
 *.pyc
 *~
-*.sqlite
+*.sqlite3
 /submission/static/node_modules/
+CLAUDE.md
+.playwright-mcp
+.code-review-graph
+.venv
+.impeccable

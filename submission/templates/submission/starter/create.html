@@ -6,210 +6,172 @@
 {% block scripts %}
     <script>
         $(document).ready(function () {
-            $('#form-championships').hide();
-
-            $('.gym-select').click(function (e) {
-                e.preventDefault();
-                const gym_id = $(this).data('gym-id');
-                const gym_state = $(this).data('gym-state');
-
-                $('#ajax_id_gym').val(gym_id);
-                $('#id_gym').val(gym_id);
-
-                if (gym_state === 10) {
-                    $('#form-championships').show();
-                } else {
-                    $('#form-championships').hide();
+            // Zustimmung erst nach vollständigem Lesen des Rechtstexts freigeben
+            const $consent = $('#id_terms_and_conditions, #id_data_protection').prop('disabled', true);
+            const body = document.getElementById('legalModalBody');
+            function unlockIfRead() {
+                if (body.scrollTop + body.clientHeight >= body.scrollHeight - 24) {
+                    $consent.prop('disabled', false);
+                    $('#legalScrollHint').html('<i class="bi bi-check-circle" aria-hidden="true"></i> Gelesen – Zustimmung ist jetzt möglich').removeClass('text-body-secondary').addClass('text-success');
                 }
-
-                // Scroll to element
-                $('html, body').animate({
-                    scrollTop: $("#header-form2").offset().top
-                }, 200);
-            });
+            }
+            $(body).on('scroll', unlockIfRead);
+            // Kurzer Text ohne Scrollbalken: beim Öffnen sofort freigeben
+            $('#legalModal').on('shown.bs.modal', unlockIfRead);
         });
     </script>
-    <style>
-        .accordion-heading {
-            background-color: #f2f2f2;
-        }
-
-        .accordion-heading a {
-            color: black;
-        }
-    </style>
 {% endblock %}
 
 {% block content %}
-
-    <p>
-        Hier beantragen Sie die Ausstellung einer Starterlizenz des DBFV e. V.,
-        welche Sie zur Teilnahme an allen Meisterschaften unseres Verbandes berechtigt.
-    </p>
-    <p>
-        Die Angaben habe ich nach bestem Wissen und Gewissen gemacht und bestätige diese
-        mit dem Absenden des Formulars.
-    </p>
-
-
-
-    <h4>1. Studio aus Ihrem Landesverband auswählen</h4>
-    <div class="accordion" id="accordion">
-        {% for state in states_list %}
-            <div class="accordion-item">
-                <h2 class="accordion-header" id="heading{{ state.pk }}">
-                    <button class="accordion-button" type="button" data-bs-toggle="collapse"
-                            data-bs-target="#collapse{{ state.pk }}" aria-expanded="true"
-                            aria-controls="collapse{{ state.pk }}">
-                        {{ state }}
-                    </button>
-                </h2>
-                <div id="collapse{{ state.pk }}" class="accordion-collapse collapse "
-                     aria-labelledby="heading{{ state.pk }}" data-bs-parent="#accordion">
-                    <div class="accordion-body">
-                        {% for gym in state.gym_set.all %}
-                            {% if gym.is_active %}
-                                <a id="gym-{{ gym.id }}"
-                                   class="gym-select"
-                                   data-gym-id="{{ gym.id }}"
-                                   data-gym-state="{{ gym.state.id }}"
-                                   href="#">{{ gym.name }} ({{ gym.city }})</a><br>
-                            {% endif %}
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-        {% endfor %}
-    </div>
-
-    <h4 class="mt-3" id="header-form2">2. Stammdaten ausfüllen</h4>
-
-    {% if form.gym.errors %}
-        <div class="control-group error">
-            <div class="controls">
-            <span class="help-inline">
-                Bitte wählen Sie ein Studio aus der Liste aus
-            </span>
-            </div>
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <p class="mb-2">
+                Hier beantragen Sie die Ausstellung einer Starterlizenz des DBFV e. V.,
+                welche Sie zur Teilnahme an allen Meisterschaften unseres Verbandes berechtigt.
+            </p>
+            <p class="mb-0 text-body-secondary">
+                Die Angaben habe ich nach bestem Wissen und Gewissen gemacht und bestätige diese
+                mit dem Absenden des Formulars.
+            </p>
         </div>
-    {% endif %}
-    <input type="hidden" name="gym" id="ajax_id_gym" value="{{ form.gym.value }}">
-
-    {% crispy form %}
-
-    <div class="col-md-offset-3 col-md-10">
-        <h3>Wettkampfregeln</h3>
-        <h4>Starterlizenz – Wettkampfregeln</h4>
-        <p>
-            Mit der Starterlizenz sind Sie zur Teilnahme an Wettkämpfen, die vom DBFV
-            e.V. sanktioniert sind, berechtigt. Es gelten die Wettkampfregeln des
-            DBFV e.V., die für Sie verbindlich sind und die Sie mit der Erteilung
-            der Starterlizenz akzeptieren.
-        </p>
-        <p>
-            Die Regeln für die entsprechenden Klassen finden Sie auf der Homepage 
-            <a href="http://dbfv.de" target="_blank">dbfv.de</a>.
-        </p>
-
-        <h4>Anti-Doping</h4>
-
-        <p>
-            Doping untergräbt die Grundlagen der Integrität, die maßgeblich auf Fairness
-            und Chancengleichheit im sportlichen Wettbewerb beruhen. Doping greift
-            tief in die ethisch-moralischen Werte des Sports ein, raubt dem Sport
-            seine Glaubwürdigkeit und Vorbildfunktion.
-        </p>
-
-        <p>
-            Darüber hinaus gefährdet Doping die Gesundheit des Sportlers. Doping
-            kann bei Arzneimittelmissbrauch mittel- oder langfristig schwerwiegende
-            und irreparable Folgen für die Gesundheit haben.
-        </p>
-
-        <p>
-            Der DBFV e.V. als Bodybuilding- und Fitness Verband distanziert sich
-            durch Anerkennung des WADA Codes (Welt-Anti-Doping Agentur) klar von der
-            Dopingszene. Verstöße werden verbandsrechtlich auf der Grundlage der
-            geltenden Satzungsbestimmungen sanktioniert.
-        </p>
-
-        <p>
-            Bitte beachten: Darüber hinaus drohen strafrechtliche Konsequenzen. Bereits
-            der Erwerb, wie auch der Besitz nicht geringer Mengen von Dopingmitteln
-            zum Zwecke des Dopings im Sport ist strafbar. Es drohen Freiheitsstrafen
-            bis zu 3 Jahren. Auch Selbstdoping ist für Spitzensportler wie auch für
-            Athleten, die aus der sportlichen Betätigung unmittelbar oder mittelbar
-            Wettbewerbsvorteile erzielen, strafbar. Es drohen hier ebenfalls
-            Freiheits- und Geldstrafen. <a href="https://www.gesetze-im-internet.de/antidopg/"
-                                           target="_blank">https://www.gesetze-im-internet.de/antidopg/</a>
-        </p>
-    
-        <h3>Datenschutzbestimmungen</h3>
-        <h4>Hinweise zur Datenverarbeitung</h4>
-
-        <h5>1. Name und Kontaktdaten des für die Verarbeitung Verantwortlichen</h5>
-        <p>Diese Datenschutzhinweise gelten für die Datenverarbeitung durch:
-        Verantwortlicher: Deutscher Bodybuilding und Fitness-Verband e.V., Präsident Michael König, Annabrunner Str. 17, 81637 München, E-Mail, koenig@dbfv.de</p>
-
-        <h5>2. Erhebung und Speicherung personenbezogener Daten sowie Art und Zweck und deren Verwendung</h5>
-
-        <p>Wenn Sie bei uns einen Antrag auf Erteilung einer Starterlizenz stellen, erheben wir folgende Informationen:</p>
-        <ul>
-            <li>Anrede, Vorname, Nachname,</li>
-            <li>eine gültige E-Mail-Adresse</li>
-            <li>Anschrift</li>
-            <li>Telefonnummer (Festnetz und/oder Mobilfunk)</li>
-        </ul>
-
-        <p>Die Erhebung dieser Daten erfolgt,</p>
-        <ul>
-            <li>um Ihre Startberechtigung bei vom DBFV e.V. sanktionierten Meisterschaften klären zu können</li>
-            <li>um Sie in Starter- und Ergebnislisten bei vom DBFV e.V. veranstalteten Meisterschaften aufnehmen zu können, wobei Starter- und/oder Ergebnislisten auch veröffentlicht werden</li>
-            <li>um Sie gegebenenfalls zu Teilnahmen bei internationalen Veranstaltungen anmelden zu können</li>
-            <li>zur Korrespondenz mit Ihnen</li>
-        </ul>
-        
-        <p>
-            Die Datenverarbeitung erfolgt auf der Grundlage der von Ihnen erteilten Einwilligung und nach Art. 6 Abs. 1 S. 1 lit. b DSGVO zu den genannten Zwecken für die angemessene Umsetzung der mit der Starterlizenz im Zusammenhang stehenden Aufgaben des DBFV e.V.. Die mit dem Starterlizenzantrag von uns erhobenen personenbezogenen Daten werden für das Jahr, in dem der Antrag gestellt wurde gespeichert und danach gelöscht, es sei denn, dass Sie in eine darüberhinausgehende Speicherung, auch nach Art. 6 Abs. 1 S. 1 lit. a DSGVO, eingewilligt haben.
-        </p>
-
-        <h5>3. Weitergabe von Daten an Dritte</h5>
-
-        <p>Eine Übermittlung Ihrer persönlichen Daten an Dritte zu anderen als den im Folgenden aufgeführten Zwecken findet nicht statt.</p>
-        <p>Soweit erforderlich werden Ihre Daten an Dritte weitergegeben, wenn dies im Zusammenhang mit einem internationalen Start an den Veranstalter erforderlich ist. Ihr Name, das Studio, für das Sie starten und Ihre Platzierung werden gegebenenfalls auch zur Veröffentlichung der Teilnahme und der Platzierung Dritten zur Verfügung gestellt. Die weitergegebenen Daten dürfen von dem Dritten ausschließlich zu den genannten Zwecken verwendet werden.</p>
-
-        
-        <h5>4. Betroffenenrechte</h5>
-
-        <p>Sie haben das Recht:</p>
-        
-        <ul>
-            <li>gemäß Art. 15 DSGVO Auskunft über Ihre von uns verarbeiteten personenbezogenen Daten zu verlangen. Insbesondere können Sie Auskunft über die Verarbeitungszwecke, die Kategorie der personenbezogenen Daten, die Kategorien von Empfängern, gegenüber denen Ihre Daten offengelegt wurden oder werden, die geplante Speicherdauer, das Bestehen eines Rechts auf Berichtigung, Löschung, Einschränkung der Verarbeitung oder Widerspruch, das Bestehen eines Beschwerderechts, die Herkunft ihrer Daten, sofern diese nicht bei uns erhoben wurden, sowie über das Bestehen einer automatisierten Entscheidungsfindung einschließlich Profiling und ggf. aussagekräftigen Informationen zu deren Einzelheiten verlangen;</li>
-            <li>gemäß Art. 7 Abs. 3 DSGVO Ihre einmal erteilte Einwilligung jederzeit gegenüber uns zu widerrufen. Dies hat zur Folge, dass wir die Datenverarbeitung, die auf dieser Einwilligung beruhte, für die Zukunft nicht mehr fortführen dürfen;</li>
-            <li>gemäß Art. 16 DSGVO unverzüglich die Berichtigung unrichtiger oder Vervollständigung Ihrer bei uns gespeicherten personenbezogenen Daten zu verlangen;</li>
-            <li>gemäß Art. 17 DSGVO die Löschung Ihrer bei uns gespeicherten personenbezogenen Daten zu verlangen, soweit nicht die Verarbeitung zur Ausübung des Rechts auf freie Meinungsäußerung und Information, zur Erfüllung einer rechtlichen Verpflichtung, aus Gründen des öffentlichen Interesses oder zur Geltendmachung, Ausübung oder Verteidigung von Rechtsansprüchen erforderlich ist;</li>
-            <li>gemäß Art. 18 DSGVO die Einschränkung der Verarbeitung Ihrer personenbezogenen Daten zu verlangen, soweit die Richtigkeit der Daten von Ihnen bestritten wird, die Verarbeitung unrechtmäßig ist, Sie aber deren Löschung ablehnen und wir die Daten nicht mehr benötigen, Sie jedoch diese zur Geltendmachung, Ausübung oder Verteidigung von Rechtsansprüchen benötigen oder Sie gemäß Art. 21 DSGVO Widerspruch gegen die Verarbeitung eingelegt haben;</li>
-            <li>gemäß Art. 20 DSGVO Ihre personenbezogenen Daten, die Sie uns bereitgestellt haben, in einem strukturierten, gängigen und maschinenlesebaren Format zu erhalten oder die Übermittlung an einen anderen Verantwortlichen zu verlangen und</li>
-            <li>gemäß Art. 77 DSGVO sich bei einer Aufsichtsbehörde zu beschweren. In der Regel können Sie sich hierfür an die Aufsichtsbehörde Ihres üblichen Aufenthaltsortes oder Arbeitsplatzes oder unseres Kanzleisitzes wenden.</li>
-        </ul>
-        
-        <p>
-            Möchten Sie von Ihrem Widerspruchsrecht Gebrauch machen, genügt eine E-Mail an: <a href="mailto:info@dbfv.de">info@dbfv.de</a>
-        </p>
-        
-
-    
-    
     </div>
 
+    <div class="wizard" data-wizard>
+        <ol class="wizard-progress">
+            <li>Studio</li>
+            <li>Persönliches</li>
+            <li>Wettkampf</li>
+            <li>Bestätigung</li>
+        </ol>
 
+        {# Schritt 1: Studioauswahl (Template-Teil, teilt sich wstep-1 mit dem Formularfeld) #}
+        <div class="wizard-step wstep-1">
+            <h4 class="wizard-step-title">Studio auswählen</h4>
+            <p class="text-body-secondary">
+                Suchen Sie Ihr Studio direkt über das Suchfeld oder grenzen Sie die
+                Liste optional nach Bundesland ein.
+            </p>
+            {% include "tags/studio_picker.html" %}
+        </div>
+
+        {% crispy form %}
+
+        {% include "tags/wizard.html" %}
+    </div>
+
+    <div class="modal fade" id="legalModal" tabindex="-1" aria-labelledby="legalModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-scrollable modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="legalModalLabel">Wettkampfregeln, Anti-Doping &amp; Datenschutz</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
+          </div>
+          <div class="modal-body" id="legalModalBody">
+            <h5>Starterlizenz – Wettkampfregeln</h5>
+            <p>
+                Mit der Starterlizenz sind Sie zur Teilnahme an Wettkämpfen, die vom DBFV
+                e.V. sanktioniert sind, berechtigt. Es gelten die Wettkampfregeln des
+                DBFV e.V., die für Sie verbindlich sind und die Sie mit der Erteilung
+                der Starterlizenz akzeptieren.
+            </p>
+            <p>
+                Die Regeln für die entsprechenden Klassen finden Sie auf der Homepage
+                <a href="http://dbfv.de" target="_blank">dbfv.de</a>.
+            </p>
+
+            <h5>Anti-Doping</h5>
+            <p>
+                Doping untergräbt die Grundlagen der Integrität, die maßgeblich auf Fairness
+                und Chancengleichheit im sportlichen Wettbewerb beruhen. Doping greift
+                tief in die ethisch-moralischen Werte des Sports ein, raubt dem Sport
+                seine Glaubwürdigkeit und Vorbildfunktion.
+            </p>
+            <p>
+                Darüber hinaus gefährdet Doping die Gesundheit des Sportlers. Doping
+                kann bei Arzneimittelmissbrauch mittel- oder langfristig schwerwiegende
+                und irreparable Folgen für die Gesundheit haben.
+            </p>
+            <p>
+                Der DBFV e.V. als Bodybuilding- und Fitness Verband distanziert sich
+                durch Anerkennung des WADA Codes (Welt-Anti-Doping Agentur) klar von der
+                Dopingszene. Verstöße werden verbandsrechtlich auf der Grundlage der
+                geltenden Satzungsbestimmungen sanktioniert.
+            </p>
+            <p>
+                Bitte beachten: Darüber hinaus drohen strafrechtliche Konsequenzen. Bereits
+                der Erwerb, wie auch der Besitz nicht geringer Mengen von Dopingmitteln
+                zum Zwecke des Dopings im Sport ist strafbar. Es drohen Freiheitsstrafen
+                bis zu 3 Jahren. Auch Selbstdoping ist für Spitzensportler wie auch für
+                Athleten, die aus der sportlichen Betätigung unmittelbar oder mittelbar
+                Wettbewerbsvorteile erzielen, strafbar. Es drohen hier ebenfalls
+                Freiheits- und Geldstrafen.
+                <a href="https://www.gesetze-im-internet.de/antidopg/" target="_blank">https://www.gesetze-im-internet.de/antidopg/</a>
+            </p>
+
+            <h5>Datenschutzbestimmungen – Hinweise zur Datenverarbeitung</h5>
+            <h6>1. Name und Kontaktdaten des für die Verarbeitung Verantwortlichen</h6>
+            <p>Diese Datenschutzhinweise gelten für die Datenverarbeitung durch:
+            Verantwortlicher: Deutscher Bodybuilding und Fitness-Verband e.V., Präsident Michael König, Annabrunner Str. 17, 81637 München, E-Mail, koenig@dbfv.de</p>
+
+            <h6>2. Erhebung und Speicherung personenbezogener Daten sowie Art und Zweck und deren Verwendung</h6>
+            <p>Wenn Sie bei uns einen Antrag auf Erteilung einer Starterlizenz stellen, erheben wir folgende Informationen:</p>
+            <ul>
+                <li>Anrede, Vorname, Nachname,</li>
+                <li>eine gültige E-Mail-Adresse</li>
+                <li>Anschrift</li>
+                <li>Telefonnummer (Festnetz und/oder Mobilfunk)</li>
+            </ul>
+            <p>Die Erhebung dieser Daten erfolgt,</p>
+            <ul>
+                <li>um Ihre Startberechtigung bei vom DBFV e.V. sanktionierten Meisterschaften klären zu können</li>
+                <li>um Sie in Starter- und Ergebnislisten bei vom DBFV e.V. veranstalteten Meisterschaften aufnehmen zu können, wobei Starter- und/oder Ergebnislisten auch veröffentlicht werden</li>
+                <li>um Sie gegebenenfalls zu Teilnahmen bei internationalen Veranstaltungen anmelden zu können</li>
+                <li>zur Korrespondenz mit Ihnen</li>
+            </ul>
+            <p>
+                Die Datenverarbeitung erfolgt auf der Grundlage der von Ihnen erteilten Einwilligung und nach Art. 6 Abs. 1 S. 1 lit. b DSGVO zu den genannten Zwecken für die angemessene Umsetzung der mit der Starterlizenz im Zusammenhang stehenden Aufgaben des DBFV e.V.. Die mit dem Starterlizenzantrag von uns erhobenen personenbezogenen Daten werden für das Jahr, in dem der Antrag gestellt wurde gespeichert und danach gelöscht, es sei denn, dass Sie in eine darüberhinausgehende Speicherung, auch nach Art. 6 Abs. 1 S. 1 lit. a DSGVO, eingewilligt haben.
+            </p>
+
+            <h6>3. Weitergabe von Daten an Dritte</h6>
+            <p>Eine Übermittlung Ihrer persönlichen Daten an Dritte zu anderen als den im Folgenden aufgeführten Zwecken findet nicht statt.</p>
+            <p>Soweit erforderlich werden Ihre Daten an Dritte weitergegeben, wenn dies im Zusammenhang mit einem internationalen Start an den Veranstalter erforderlich ist. Ihr Name, das Studio, für das Sie starten und Ihre Platzierung werden gegebenenfalls auch zur Veröffentlichung der Teilnahme und der Platzierung Dritten zur Verfügung gestellt. Die weitergegebenen Daten dürfen von dem Dritten ausschließlich zu den genannten Zwecken verwendet werden.</p>
+
+            <h6>4. Betroffenenrechte</h6>
+            <p>Sie haben das Recht:</p>
+            <ul>
+                <li>gemäß Art. 15 DSGVO Auskunft über Ihre von uns verarbeiteten personenbezogenen Daten zu verlangen. Insbesondere können Sie Auskunft über die Verarbeitungszwecke, die Kategorie der personenbezogenen Daten, die Kategorien von Empfängern, gegenüber denen Ihre Daten offengelegt wurden oder werden, die geplante Speicherdauer, das Bestehen eines Rechts auf Berichtigung, Löschung, Einschränkung der Verarbeitung oder Widerspruch, das Bestehen eines Beschwerderechts, die Herkunft ihrer Daten, sofern diese nicht bei uns erhoben wurden, sowie über das Bestehen einer automatisierten Entscheidungsfindung einschließlich Profiling und ggf. aussagekräftigen Informationen zu deren Einzelheiten verlangen;</li>
+                <li>gemäß Art. 7 Abs. 3 DSGVO Ihre einmal erteilte Einwilligung jederzeit gegenüber uns zu widerrufen. Dies hat zur Folge, dass wir die Datenverarbeitung, die auf dieser Einwilligung beruhte, für die Zukunft nicht mehr fortführen dürfen;</li>
+                <li>gemäß Art. 16 DSGVO unverzüglich die Berichtigung unrichtiger oder Vervollständigung Ihrer bei uns gespeicherten personenbezogenen Daten zu verlangen;</li>
+                <li>gemäß Art. 17 DSGVO die Löschung Ihrer bei uns gespeicherten personenbezogenen Daten zu verlangen, soweit nicht die Verarbeitung zur Ausübung des Rechts auf freie Meinungsäußerung und Information, zur Erfüllung einer rechtlichen Verpflichtung, aus Gründen des öffentlichen Interesses oder zur Geltendmachung, Ausübung oder Verteidigung von Rechtsansprüchen erforderlich ist;</li>
+                <li>gemäß Art. 18 DSGVO die Einschränkung der Verarbeitung Ihrer personenbezogenen Daten zu verlangen, soweit die Richtigkeit der Daten von Ihnen bestritten wird, die Verarbeitung unrechtmäßig ist, Sie aber deren Löschung ablehnen und wir die Daten nicht mehr benötigen, Sie jedoch diese zur Geltendmachung, Ausübung oder Verteidigung von Rechtsansprüchen benötigen oder Sie gemäß Art. 21 DSGVO Widerspruch gegen die Verarbeitung eingelegt haben;</li>
+                <li>gemäß Art. 20 DSGVO Ihre personenbezogenen Daten, die Sie uns bereitgestellt haben, in einem strukturierten, gängigen und maschinenlesebaren Format zu erhalten oder die Übermittlung an einen anderen Verantwortlichen zu verlangen und</li>
+                <li>gemäß Art. 77 DSGVO sich bei einer Aufsichtsbehörde zu beschweren. In der Regel können Sie sich hierfür an die Aufsichtsbehörde Ihres üblichen Aufenthaltsortes oder Arbeitsplatzes oder unseres Kanzleisitzes wenden.</li>
+            </ul>
+            <p>
+                Möchten Sie von Ihrem Widerspruchsrecht Gebrauch machen, genügt eine E-Mail an: <a href="mailto:info@dbfv.de">info@dbfv.de</a>
+            </p>
+          </div>
+          <div class="modal-footer">
+            <span class="text-body-secondary small me-auto" id="legalScrollHint">
+                <i class="bi bi-arrow-down-circle" aria-hidden="true"></i>
+                Bitte bis ans Ende scrollen
+            </span>
+            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">
+                Gelesen &amp; schließen
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
 {% endblock %}
 
 {% block sidebar %}
-    <div class="sidebar-box">
-        <h4>Lizenzgebühr</h4>
-        <p>Die Lizenzgebühr in Höhe von €75,64 + ges. MwSt = €{{ fee }} ist im Voraus zu
-            entrichten. Bitte immer Name und Antragsnummer angeben. Die Bearbeitung
-            erfolgt erst nach Eingang der Gebühr!</p>
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h5 class="card-title">Lizenzgebühr</h5>
+            <p class="card-text mb-0">Die Lizenzgebühr in Höhe von €75,64 + ges. MwSt = €{{ fee }} ist im Voraus zu
+                entrichten. Bitte immer Name und Antragsnummer angeben. Die Bearbeitung
+                erfolgt erst nach Eingang der Gebühr!</p>
+        </div>
     </div>
 {% endblock %}
