@@ -7,9 +7,10 @@
 {% block content %}
     <!-- Hero -->
     <div class="hero p-5 mb-5 shadow-sm">
+        <span class="eyebrow">DBFV e.V. · Lizenzen</span>
         <h1 class="display-6 fw-bold mb-2">Willkommen!</h1>
         <p class="lead mb-0 text-body-secondary">
-            Beantrage deine DBFV-Lizenz – wähle unten die passende Lizenzart.
+            Beantragen Sie Ihre DBFV-Lizenz – wählen Sie unten die passende Lizenzart.
         </p>
     </div>
 
@@ -19,7 +20,7 @@
             <div class="card license-card h-100 shadow-sm">
                 <div class="card-body d-flex flex-column p-4">
                     <div class="icon-circle bg-success-subtle text-success mb-3">
-                        <i class="bi bi-trophy"></i>
+                        <i class="bi bi-trophy" aria-hidden="true"></i>
                     </div>
                     <h2 class="card-title h5">Starterlizenz</h2>
                     <p class="card-text text-body-secondary">
@@ -44,7 +45,7 @@
             <div class="card license-card h-100 shadow-sm">
                 <div class="card-body d-flex flex-column p-4">
                     <div class="icon-circle bg-primary-subtle text-primary mb-3">
-                        <i class="bi bi-globe"></i>
+                        <i class="bi bi-globe" aria-hidden="true"></i>
                     </div>
                     <h2 class="card-title h5">Internationale Starts</h2>
                     <p class="card-text text-body-secondary">
@@ -69,7 +70,7 @@
             <div class="card license-card h-100 shadow-sm">
                 <div class="card-body d-flex flex-column p-4">
                     <div class="icon-circle bg-danger-subtle text-danger mb-3">
-                        <i class="bi bi-building"></i>
+                        <i class="bi bi-building" aria-hidden="true"></i>
                     </div>
                     <h2 class="card-title h5">Studiolizenz</h2>
                     <p class="card-text text-body-secondary">
@@ -95,40 +96,6 @@
 {% endblock %}
 
 
-{% block sidebar %}
-    {% if user.is_authenticated %}
-        <div class="bg-light p-3">
-            <h2>Optionen</h2>
-            {% if perms.submission.add_manageremail %}
-                <div class="d-grid gap-2">
-                    <a class="btn btn-outline-secondary"
-                       href="{% url 'state-list' %}">
-                        Bundesländer
-                    </a>
-                    <a class="btn btn-outline-secondary" href="{% url 'gym-list' %}">Studios</a>
-                    <a class="btn btn-outline-secondary" href="{% url 'bank-account-list' %}">Bankkonten</a>
-                    <a class="btn btn-outline-secondary" href="{% url 'email-list' %}">Manager
-                        Emails</a>
-                </div>
-
-                <h4 class="mt-3">Anträge</h4>
-                <div class="d-grid gap-2">
-                    <a class="btn btn-outline-secondary" href="{% url 'submission-list' %}">Starterlizenzen</a>
-                    <!--<a class="btn btn-outline-secondary" href="{% url 'submission-judge-list' %}">Kampfrichterlizenzen</a>-->
-                    <a class="btn btn-outline-secondary" href="{% url 'submission-studio-list' %}">Studiolizenzen</a>
-                </div>
-
-            {% elif perms.submission.add_submissionstarter %}
-                <div class="d-grid gap-2">
-                    <a class="btn btn-outline-secondary" href="{% url 'submission-list' %}">Starterlizenzen</a>
-                    <a class="btn btn-outline-secondary" href="{% url 'submission-judge-list' %}">Kampfrichterlizenzen</a>
-                    <a class="btn btn-outline-secondary"
-                       href="{% url 'submission-international-list' %}">
-                        Internationale Starts
-                    </a>
-                </div>
-            {% endif %}
-
-        </div>
-    {% endif %}
-{% endblock %}
+{# Sidebar bewusst leer: die Verwaltungs-/Antrags-Links leben bereits in der
+   Navbar (keine Dopplung). Startseite nutzt die volle Breite. #}
+{% block sidebar %}{% endblock %}

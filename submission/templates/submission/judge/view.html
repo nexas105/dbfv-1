@@ -7,48 +7,52 @@
 {% endblock %}
 
 {% block content %}
-<p>
-    {% if object.submission_status == '1' %}
-        <span class="badge text-bg-light">Eingegangen</span>
-    {% elif object.submission_status == '2' %}
-        <span class="badge text-bg-success">Bewilligt</span>
-    {% elif object.submission_status == '3' %}
-        <span class="badge text-bg-danger">Abgelehnt</span>
-    {% endif %}
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
+            <h3 class="h5 mb-0 me-auto">{{ object.get_name }}</h3>
+            {% if object.submission_status == '1' %}
+                <span class="badge text-bg-secondary">Eingegangen</span>
+            {% elif object.submission_status == '2' %}
+                <span class="badge text-bg-success">Bewilligt</span>
+            {% elif object.submission_status == '3' %}
+                <span class="badge text-bg-danger">Abgelehnt</span>
+            {% endif %}
+            {% if perms.submission.change_submissionjudge %}
+                {% if object.pdf_sent %}
+                    <span class="badge text-bg-success">PDF verschickt</span>
+                {% else %}
+                    <span class="badge text-bg-secondary">Kein PDF verschickt</span>
+                {% endif %}
+            {% endif %}
+        </div>
 
-    {% if perms.submission.change_submissionjudge %}
-        {% if object.pdf_sent %}
-            <span class="badge text-bg-success">PDF verschickt</span>
-        {% else %}
-            <span class="badge text-bg-light">Noch kein PDF verschickt</span>
-        {% endif %}
-    {% endif %}
-</p>
-
-<table class="table">
-    <tr>
-        <th>Landesverband</th>
-        <td colspan="3">{{object.state}}</td>
-    </tr>
-    <tr>
-        <th>Vorname</th>
-        <td>{{object.first_name}}</td>
-        <th>Nachname</th>
-        <td>{{object.last_name}}</td>
-    </tr>
-    <tr>
-        <th>Straße</th>
-        <td>{{object.street}}</td>
-        <th>Wohnort</th>
-        <td>{{object.zip_code}}, {{object.city}}</td>
-    </tr>
-    <tr>
-        <th>Tel. Nr.</th>
-        <td>{{object.tel_number}}</td>
-        <th>Email</th>
-        <td colspan="3"><a href="mailto:{{object.email}}">{{object.email}}</a></td>
-    </tr>
-</table>
+        <table class="table mb-0">
+            <tr>
+                <th>Landesverband</th>
+                <td colspan="3">{{object.state}}</td>
+            </tr>
+            <tr>
+                <th>Vorname</th>
+                <td>{{object.first_name}}</td>
+                <th>Nachname</th>
+                <td>{{object.last_name}}</td>
+            </tr>
+            <tr>
+                <th>Straße</th>
+                <td>{{object.street}}</td>
+                <th>Wohnort</th>
+                <td>{{object.zip_code}}, {{object.city}}</td>
+            </tr>
+            <tr>
+                <th>Tel. Nr.</th>
+                <td>{{object.tel_number}}</td>
+                <th>Email</th>
+                <td colspan="3"><a href="mailto:{{object.email}}">{{object.email}}</a></td>
+            </tr>
+        </table>
+    </div>
+</div>
 {% endblock %}
 
 {% block sidebar %}
