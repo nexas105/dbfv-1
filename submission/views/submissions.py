@@ -28,6 +28,7 @@ from django.http.response import (
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse_lazy, reverse
 from django.views import generic
+from django.views.decorators.http import require_POST
 
 # dbfv
 from submission.forms import (
@@ -374,6 +375,7 @@ def judge_pdf(request, pk):
     return response
 
 
+@require_POST
 def send_pdf(request, pk):
     """
     Re-sends the PDF to the given submission
@@ -387,6 +389,7 @@ def send_pdf(request, pk):
     return HttpResponseRedirect(submission.get_absolute_url())
 
 
+@require_POST
 def send_judge_pdf(request, pk):
     """
     Re-sends the PDF to the given submission

@@ -42,6 +42,20 @@ from submission.models import (
 )
 
 
+def csv_safe(value):
+    """
+    Neutralize spreadsheet formula injection.
+
+    Cells starting with =, +, -, @ or a leading tab/CR can be interpreted as
+    a formula by spreadsheet apps; prefix them with an apostrophe so they are
+    read as text.
+    """
+    text = '' if value is None else str(value)
+    if text[:1] in ('=', '+', '-', '@', '\t', '\r'):
+        return "'" + text
+    return text
+
+
 class DbfvViewMixin(TemplateResponseMixin):
     permission_required = ''
     login_required = False
@@ -127,8 +141,12 @@ class BaseSubmissionDeleteView(DbfvViewMixin, generic.DeleteView):
     Deletes a submission
     """
 
-    permission_required = 'submission.delete_submissiongym'
     template_name = 'delete.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        # Require the delete permission for the concrete model, not a fixed one.
+        self.permission_required = f'submission.delete_{self.model._meta.model_name}'
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         """
@@ -160,7 +178,8 @@ class BaseSubmissionUpdateView(DbfvFormMixin, generic.UpdateView):
         Check for necessary permissions
         """
         submission = self.get_object()
-        if not request.user.has_perm('submission.delete_submissionstarter') \
+        change_perm = f'submission.change_{self.model._meta.model_name}'
+        if not request.user.has_perm(change_perm) \
             and (submission.submission_status != submission.SUBMISSION_STATUS_EINGEGANGEN
                  or submission.user != request.user):
             return HttpResponseForbidden(u'Sie dürfen dieses Objekt nicht editieren!')
@@ -183,7 +202,7 @@ class BaseCsvExportView(View):
         """
         Check for necessary permissions
         """
-        if not request.user.has_perm('submission.change_submissionstarter'):
+        if not request.user.has_perm(f'submission.change_{self.model._meta.model_name}'):
             return HttpResponseForbidden()
 
         return super(BaseCsvExportView, self).dispatch(request, *args, **kwargs)
@@ -218,10 +237,10 @@ class BaseCsvExportView(View):
         today = datetime.date.today()
         submissions = self.get_submission_list()
 
-        # Write the CSV file
-        writer.writerow(self.model.MAILMERGE_HEADER)
+        # Write the CSV file (cells neutralized against formula injection)
+        writer.writerow([csv_safe(cell) for cell in self.model.MAILMERGE_HEADER])
         for line in self.export_submission_mailmerge(submissions):
-            writer.writerow(line)
+            writer.writerow([csv_safe(cell) for cell in line])
 
         # If necessary, update the submission flag
         if self.update_submission_flag:

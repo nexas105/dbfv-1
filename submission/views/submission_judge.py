@@ -18,6 +18,7 @@
 import datetime
 
 # Django
+from django.http import HttpResponseForbidden
 from django.urls import reverse_lazy
 from django.views import generic
 
@@ -105,6 +106,18 @@ class SubmissionDetailView(DbfvViewMixin, generic.detail.DetailView):
     login_required = True
     model = SubmissionJudge
     template_name = 'submission/judge/view.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        """
+        Only the owner or a user with the judge delete permission may view a
+        submission (prevents IDOR on the numeric id).
+        """
+        submission = self.get_object()
+        if not request.user.has_perm('submission.delete_submissionjudge') \
+                and submission.user != request.user:
+            return HttpResponseForbidden()
+
+        return super().dispatch(request, *args, **kwargs)
 
 
 class SubmissionCreateView(BaseSubmissionCreateView):

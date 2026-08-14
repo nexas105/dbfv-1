@@ -66,7 +66,8 @@
 
 {% if object.submission_status == object.SUBMISSION_STATUS_BEWILLIGT %}
 <h4>PDF/QR-Code</h4>
-<p><a href="{% url 'submission-judge-resend-pdf' object.id %}">Email nochmal verschicken</a></p>
+<form method="post" action="{% url 'submission-judge-resend-pdf' object.id %}">{% csrf_token %}
+<button type="submit" class="btn btn-link p-0">Email nochmal verschicken</button></form>
 <p><a href="{% url 'submission-judge-pdf' object.id %}" download="Kampfrichterlizenz-{{ object.id }}">PDF-Datei runterladen</a></p>
 {% endif %}
 {% endblock %}
