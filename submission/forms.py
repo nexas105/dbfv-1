@@ -25,6 +25,7 @@ from django.contrib.auth.models import User as Django_User
 from django.core.exceptions import ValidationError
 from django.forms import (
     BooleanField,
+    DateInput,
     EmailField,
     ModelChoiceField,
     ModelForm,
@@ -36,6 +37,8 @@ from django.utils.translation import gettext as _
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import (
     Column,
+    Div,
+    HTML,
     Layout,
     Row,
     Submit,
@@ -52,6 +55,24 @@ from submission.models import (
     SubmissionJudge,
     SubmissionStarter,
 )
+
+
+def _tune_submission_widgets(form, date_fields):
+    """
+    Setzt sinnvolle HTML5-Eingabetypen/-Attribute für die Antragsfelder, damit
+    Browser (und die Wizard-Schrittprüfung) client-seitig validieren können.
+    """
+    for name in date_fields:
+        form.fields[name].widget = DateInput(attrs={'type': 'date'}, format='%Y-%m-%d')
+        form.fields[name].input_formats = ['%Y-%m-%d']
+    if 'tel_number' in form.fields:
+        form.fields['tel_number'].widget.attrs.update({'type': 'tel', 'inputmode': 'tel'})
+    if 'zip_code' in form.fields:
+        form.fields['zip_code'].widget.attrs.update({'inputmode': 'numeric'})
+    if 'height' in form.fields:
+        form.fields['height'].widget.attrs.update({'min': 100, 'max': 250, 'inputmode': 'numeric'})
+    if 'weight' in form.fields:
+        form.fields['weight'].widget.attrs.update({'min': 0, 'step': '0.01', 'inputmode': 'decimal'})
 
 
 class UserEmailForm(ModelForm):
@@ -142,28 +163,58 @@ class SubmissionStarterForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        _tune_submission_widgets(self, ['date_of_birth'])
+
         self.helper = FormHelper()
-        self.helper.add_input(Submit('submit', 'Abschicken', css_class='btn-success'))
+        self.helper.add_input(
+            Submit('submit', 'Abschicken', css_class='btn-success btn-lg wizard-submit')
+        )
         self.helper.layout = Layout(
-            Row(
-                Column('first_name', css_class='col-6'),
-                Column('last_name', css_class='col-6'),
-                Column('nationality', css_class='col-12'),
-                Column('date_of_birth', css_class='col-6'),
-                Column('active_since', css_class='col-6'),
-                Column('street', css_class='col-4'),
-                Column('house_nr', css_class='col-2'),
-                Column('zip_code', css_class='col-2'),
-                Column('city', css_class='col-4'),
-                Column('tel_number', css_class='col-6'),
-                Column('email', css_class='col-6'),
-                Column('height', css_class='col-6'),
-                Column('weight', css_class='col-6'),
-                Column('category', css_class='col-12'),
-                Column('gym', css_class='col-12'),
-                Column('terms_and_conditions', css_class='col-12'),
-                Column('data_protection', css_class='col-12'),
-            )
+            Div(
+                Row(Column('gym', css_class='col-12')),
+                css_class='wizard-step wstep-1',
+            ),
+            Div(
+                HTML('<h4 class="wizard-step-title">Persönliche Daten</h4>'),
+                Row(
+                    Column('first_name', css_class='col-6'),
+                    Column('last_name', css_class='col-6'),
+                    Column('nationality', css_class='col-12'),
+                    Column('date_of_birth', css_class='col-12'),
+                    Column('street', css_class='col-6'),
+                    Column('house_nr', css_class='col-2'),
+                    Column('zip_code', css_class='col-4'),
+                    Column('city', css_class='col-8'),
+                    Column('tel_number', css_class='col-6'),
+                    Column('email', css_class='col-6'),
+                ),
+                css_class='wizard-step wstep-2',
+            ),
+            Div(
+                HTML('<h4 class="wizard-step-title">Wettkampfdaten</h4>'),
+                Row(
+                    Column('active_since', css_class='col-6'),
+                    Column('category', css_class='col-6'),
+                    Column('height', css_class='col-6'),
+                    Column('weight', css_class='col-6'),
+                ),
+                css_class='wizard-step wstep-3',
+            ),
+            Div(
+                HTML('<h4 class="wizard-step-title">Bestätigung</h4>'),
+                HTML(
+                    '<p>Bitte lesen Sie die '
+                    '<a href="#" data-bs-toggle="modal" data-bs-target="#legalModal">'
+                    'Wettkampfregeln, Anti-Doping- und Datenschutzbestimmungen</a>. '
+                    'Die Zustimmung lässt sich erst ankreuzen, nachdem Sie den Text '
+                    'vollständig gelesen (bis ans Ende gescrollt) haben.</p>'
+                ),
+                Row(
+                    Column('terms_and_conditions', css_class='col-12'),
+                    Column('data_protection', css_class='col-12'),
+                ),
+                css_class='wizard-step wstep-4',
+            ),
         )
 
 
@@ -184,28 +235,49 @@ class SubmissionInternationalForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        _tune_submission_widgets(self, ['date_of_birth', 'championship_date'])
+
         self.helper = FormHelper()
-        self.helper.add_input(Submit('submit', 'Speichern', css_class='btn-success'))
+        self.helper.add_input(
+            Submit('submit', 'Speichern', css_class='btn-success btn-lg wizard-submit')
+        )
         self.helper.layout = Layout(
-            Row(
-                Column('first_name', css_class='col-6'),
-                Column('last_name', css_class='col-6'),
-                Column('date_of_birth', css_class='col-12'),
-                Column('street', css_class='col-4 '),
-                Column('zip_code', css_class='col-2 '),
-                Column('city', css_class='col-6 '),
-                Column('tel_number', css_class='col-6 '),
-                Column('email', css_class='col-6 '),
-                Column('nationality', css_class='col-12 '),
-                Column('height', css_class='col-6 '),
-                Column('weight', css_class='col-6 '),
-                Column('category', css_class='col-12 '),
-                Column('championship', css_class='col-6 '),
-                Column('championship_date', css_class='col-6 '),
-                Column('best_placement', css_class='col-12 '),
-                Column('gym', css_class='col-12 '),
-                Column('terms_and_conditions', css_class='col-12 '),
-            )
+            Div(
+                Row(Column('gym', css_class='col-12')),
+                css_class='wizard-step wstep-1',
+            ),
+            Div(
+                HTML('<h4 class="wizard-step-title">Persönliche Daten</h4>'),
+                Row(
+                    Column('first_name', css_class='col-6'),
+                    Column('last_name', css_class='col-6'),
+                    Column('date_of_birth', css_class='col-6'),
+                    Column('nationality', css_class='col-6'),
+                    Column('street', css_class='col-8'),
+                    Column('zip_code', css_class='col-4'),
+                    Column('city', css_class='col-6'),
+                    Column('tel_number', css_class='col-6'),
+                    Column('email', css_class='col-12'),
+                ),
+                css_class='wizard-step wstep-2',
+            ),
+            Div(
+                HTML('<h4 class="wizard-step-title">Wettkampfdaten</h4>'),
+                Row(
+                    Column('height', css_class='col-6'),
+                    Column('weight', css_class='col-6'),
+                    Column('category', css_class='col-12'),
+                    Column('championship', css_class='col-6'),
+                    Column('championship_date', css_class='col-6'),
+                    Column('best_placement', css_class='col-12'),
+                ),
+                css_class='wizard-step wstep-3',
+            ),
+            Div(
+                HTML('<h4 class="wizard-step-title">Bestätigung</h4>'),
+                Row(Column('terms_and_conditions', css_class='col-12')),
+                css_class='wizard-step wstep-4',
+            ),
         )
 
 

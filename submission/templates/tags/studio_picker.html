@@ -1,0 +1,137 @@
+{% comment %}
+Studioauswahl (Design 2.0):
+  - Direkte Vereins-/Studiosuche (Name oder Ort), auch ohne Bundesland
+  - Optionaler Bundesland-Filter mit Anzahl der Vereine je Land (in Klammern)
+  - Studios als anklickbare Cards (Radios, barrierefrei)
+Setzt das echte Formularfeld #id_gym. Braucht `states_list` im Kontext und ein
+crispy-Feld `gym` (rendert als #id_gym in #div_id_gym) im umgebenden Formular.
+{% endcomment %}
+<div class="studio-picker mb-2">
+    <div class="row g-2 mb-3">
+        <div class="col-md-7">
+            <label for="studio-search" class="form-label fw-semibold">Verein / Studio suchen</label>
+            <input type="search" id="studio-search" class="form-control"
+                   placeholder="Name oder Ort eingeben …" autocomplete="off" aria-controls="studio-list">
+        </div>
+        <div class="col-md-5">
+            <label for="state-picker" class="form-label fw-semibold">Bundesland (optional)</label>
+            <select id="state-picker" class="form-select">
+                <option value="">Alle Bundesländer</option>
+                {% for state in states_list %}
+                    <option value="{{ state.pk }}">{{ state }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <fieldset>
+        <legend class="visually-hidden">Studio auswählen</legend>
+        <div id="studio-list" class="row g-2" role="radiogroup"
+             style="max-height: 26rem; overflow-y: auto;">
+            {% for state in states_list %}
+                {% for gym in state.gym_set.all %}
+                    {% if gym.is_active %}
+                        <div class="col-sm-6 col-lg-4 studio-card-col"
+                             data-state="{{ state.pk }}"
+                             data-name="{{ gym.name|lower }} {{ gym.city|lower }}">
+                            <label class="studio-card card h-100 mb-0">
+                                <input class="form-check-input gym-radio visually-hidden" type="radio"
+                                       name="gym-pick" value="{{ gym.id }}">
+                                <span class="card-body py-2 px-3">
+                                    <span class="d-block fw-semibold">{{ gym.name }}</span>
+                                    <span class="d-block text-body-secondary small">{{ gym.city }}</span>
+                                </span>
+                            </label>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            {% endfor %}
+        </div>
+        <p id="studio-empty" class="text-body-secondary small mt-2" hidden>
+            Kein passendes Studio gefunden.
+        </p>
+    </fieldset>
+</div>
+
+{% if form.gym.errors %}
+    <div class="alert alert-danger py-2 mt-2">Bitte wählen Sie ein Studio aus.</div>
+{% endif %}
+<p id="studio-confirm" role="status" aria-live="polite" class="small text-success mt-2 mb-0"></p>
+
+<style>
+    #div_id_gym { display: none; }  /* natives Feld = Fallback ohne JS */
+    .studio-card { cursor: pointer; transition: border-color .12s ease, box-shadow .12s ease; }
+    .studio-card:hover { border-color: #b3121b; }
+    .studio-card.is-selected {
+        border-color: #b3121b;
+        box-shadow: 0 0 0 .15rem rgba(179,18,27,.25);
+    }
+</style>
+<noscript>
+    <style>
+        .studio-picker { display: none; }
+        #div_id_gym { display: block !important; }
+    </style>
+</noscript>
+
+<script>
+// Erst nach DOMContentLoaded: hier ist jQuery (blockierendes Script) geladen
+document.addEventListener('DOMContentLoaded', function () {
+    var picker = document.querySelector('.studio-picker');
+    if (!picker) return;
+    var $gym = $('#id_gym');
+    var $state = $('#state-picker');
+    var $search = $('#studio-search');
+    var cols = Array.prototype.slice.call(document.querySelectorAll('#studio-list .studio-card-col'));
+
+    // Anzahl Vereine je Bundesland in die Auswahl schreiben
+    var counts = {};
+    cols.forEach(function (el) { counts[el.dataset.state] = (counts[el.dataset.state] || 0) + 1; });
+    $state.find('option').each(function () {
+        if (this.value && counts[this.value]) this.textContent = this.textContent.replace(/\s*\(\d+\)$/, '') + ' (' + counts[this.value] + ')';
+    });
+
+    function confirmText() {
+        $('#studio-confirm').text($gym.val() ? 'Ausgewählt: ' + $gym.find('option:selected').text() : '');
+    }
+
+    function filter() {
+        var st = $state.val();
+        var q = ($search.val() || '').toLowerCase().trim();
+        var shown = 0;
+        cols.forEach(function (el) {
+            var match = (!st || el.dataset.state === st) && (!q || el.dataset.name.indexOf(q) > -1);
+            el.hidden = !match;
+            if (match) shown++;
+        });
+        document.getElementById('studio-empty').hidden = shown > 0;
+    }
+
+    function markSelected() {
+        document.querySelectorAll('.studio-card').forEach(function (card) {
+            card.classList.toggle('is-selected', card.querySelector('.gym-radio').checked);
+        });
+    }
+
+    $state.on('change', filter);
+    $search.on('input', filter);
+    $('#studio-list').on('change', '.gym-radio', function () {
+        $gym.val(this.value).trigger('change');
+        markSelected();
+    });
+    $gym.on('change', confirmText);
+
+    // Vorauswahl bei Formularfehlern / Bearbeitung übernehmen
+    var cur = $gym.val();
+    if (cur) {
+        var $r = $('.gym-radio[value="' + cur + '"]');
+        if ($r.length) {
+            $r.prop('checked', true);
+            $state.val($r.closest('.studio-card-col').data('state'));
+        }
+    }
+    filter();
+    markSelected();
+    confirmText();
+});
+</script>

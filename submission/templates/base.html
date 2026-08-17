@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 {% load i18n static %}
-<html lang="en">
+<html lang="de">
 <head>
     <!--
      This file is part of the DBFV site.
@@ -20,39 +20,144 @@
     -->
 
     <meta charset="utf-8">
-    <title>DBFV Antragsystem</title>
+    <title>{% block browser_title %}DBFV Antragssystem{% endblock %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="">
+    <meta name="description"
+          content="Antragssystem des DBFV e.V. zur Beantragung und Verwaltung von Starter-, Studio- und Kampfrichterlizenzen.">
     <meta name="author" content="Roland Geider">
 
+    <link rel="icon" type="image/png" href="{% static 'img/DBFV-logo.png' %}">
     <link href="{% static 'node_modules/bootstrap/dist/css/bootstrap.min.css' %}" rel="stylesheet">
     <link href="{% static 'node_modules/bootstrap-icons/font/bootstrap-icons.css' %}"
           rel="stylesheet">
     <!--<link href="{% static 'css/bootstrap-custom.css' %}" rel="stylesheet">-->
     <link href="{% static 'css/token-input.css' %}" rel="stylesheet">
+
+    <style>
+        /* --- DBFV Design tokens --- */
+        :root {
+            --dbfv-red: #b3121b;
+            --dbfv-ink: #1a1d21;
+            --dbfv-muted: #667085;
+            --dbfv-line: #e6e8ec;
+            --radius: 1rem;
+        }
+
+        /* --- DBFV Design 2.0: app-wide layer --- */
+        /* Sticky footer: body fills viewport, main grows, footer stays at bottom */
+        body {
+            background-color: #f6f7f9; color: var(--dbfv-ink);
+            min-height: 100vh; display: flex; flex-direction: column;
+        }
+        main.page { flex: 1 0 auto; padding-bottom: 3rem; }
+        body > footer { flex-shrink: 0; }
+
+        .page-title { font-weight: 700; margin-bottom: 1.25rem; }
+        .page-title:empty { display: none; }
+
+        /* Cards */
+        .card { border: 0; border-radius: 1rem; }
+        .card.shadow-sm { box-shadow: 0 .125rem .5rem rgba(0,0,0,.06) !important; }
+
+        /* Buttons a touch softer */
+        .btn { border-radius: .5rem; }
+
+        /* Tables */
+        .table { --bs-table-bg: transparent; }
+        .table > thead th { border-bottom-width: 2px; white-space: nowrap; }
+
+        /* Navbar dropdowns */
+        .navbar .dropdown-menu {
+            border: 0;
+            border-radius: .75rem;
+            box-shadow: 0 .5rem 1.5rem rgba(0,0,0,.10);
+        }
+
+        /* Reusable pieces (index + future pages) */
+        .hero {
+            background: linear-gradient(135deg, #ffffff 0%, #f2f4f7 100%);
+            border: 1px solid var(--dbfv-line);
+            border-radius: var(--radius);
+        }
+        .eyebrow {
+            display: inline-block;
+            font-size: .75rem; font-weight: 700; letter-spacing: .08em;
+            text-transform: uppercase; color: var(--dbfv-red);
+            margin-bottom: .5rem;
+        }
+        .license-card { transition: transform .18s ease, box-shadow .18s ease; }
+        .license-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 .75rem 1.75rem rgba(0,0,0,.12) !important;
+        }
+        .icon-circle {
+            width: 3.25rem; height: 3.25rem;
+            display: inline-flex; align-items: center; justify-content: center;
+            border-radius: 50%; font-size: 1.5rem;
+        }
+
+        /* Sidebar boxes -> card look (app-wide, no per-template edits) */
+        .sidebar-box {
+            background: #fff;
+            border-radius: 1rem;
+            padding: 1.25rem;
+            box-shadow: 0 .125rem .5rem rgba(0,0,0,.06);
+            margin-bottom: 1.5rem;
+        }
+        .sidebar-box h4 { font-size: 1rem; font-weight: 700; }
+        .sidebar-box p { margin-bottom: .5rem; }
+
+        /* --- Antrags-Wizard (Design 2.0) --- */
+        .wizard { max-width: 720px; }
+        .wizard-progress {
+            display: flex; list-style: none; padding: 0; margin: 0 0 1.75rem;
+            counter-reset: wstep;
+        }
+        .wizard-progress li {
+            flex: 1 1 0; position: relative; text-align: center;
+            font-size: .8rem; color: #98a2b3; font-weight: 600;
+        }
+        .wizard-progress li::before {
+            counter-increment: wstep; content: counter(wstep);
+            display: flex; align-items: center; justify-content: center;
+            width: 2rem; height: 2rem; margin: 0 auto .4rem;
+            border-radius: 50%; background: #e4e7ec; color: #667085;
+            font-weight: 700; position: relative; z-index: 1;
+            transition: background .2s ease, color .2s ease;
+        }
+        /* connector line between dots */
+        .wizard-progress li:not(:first-child)::after {
+            content: ""; position: absolute; top: 1rem; right: 50%;
+            width: 100%; height: 2px; background: #e4e7ec; z-index: 0;
+        }
+        .wizard-progress li.is-active { color: #b3121b; }
+        .wizard-progress li.is-active::before { background: #b3121b; color: #fff; }
+        .wizard-progress li.is-done { color: #1a7f37; }
+        .wizard-progress li.is-done::before {
+            background: #1a7f37; color: #fff;
+            content: "\2713";  /* checkmark */
+        }
+        .wizard-progress li.is-done:not(:first-child)::after,
+        .wizard-progress li.is-active:not(:first-child)::after { background: #b3121b; }
+
+        .wizard-step { display: none; }
+        .wizard-step.is-current { display: block; animation: wizard-fade .2s ease; }
+        @keyframes wizard-fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+        .wizard-step-title { font-weight: 700; margin-bottom: 1rem; }
+
+        .wizard-nav { display: flex; justify-content: space-between; gap: .75rem; margin-top: 1.5rem; }
+        .wizard-nav .btn-back { margin-right: auto; }
+        .wizard-submit { display: none; }  /* JS zeigt ihn im letzten Schritt */
+    </style>
 </head>
 
 <body>
-<div class="container">
-    <div class="row">
-        <div class="col-md-2" id="logo">
-            <a href="http://www.dbfv.de"
-               target="_blank">
-                <img src="{% static 'img/DBFV-logo.png' %}"
-                     width="142"
-                     height="143"
-                     alt="Logo des DBFV"></a>
-        </div>
-
-        <div class="col-md-10">
-            <h1>Antragssystem des DBFV e.V.</h1>
-        </div>
-    </div>
-</div>
-
-<nav class="navbar navbar-expand-lg bg-light">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="/">DBFV</a>
+<nav class="navbar navbar-expand-lg bg-white shadow-sm mb-4" style="border-bottom: 3px solid #b3121b;">
+    <div class="container">
+        <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+            <img src="{% static 'img/DBFV-logo.png' %}" width="44" height="44" alt="Logo des DBFV">
+            <span class="fw-bold">DBFV <span class="fw-normal text-body-secondary">Antragssystem</span></span>
+        </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                 data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
                 aria-expanded="false" aria-label="Toggle navigation">
@@ -76,7 +181,7 @@
                             <!--
                             <li>
                                 <a class="dropdown-item" href="{% url 'submission-judge-list' %}">
-                                    Kampfrichterizenzen
+                                    Kampfrichterlizenzen
                                 </a>
                             </li>
                             -->
@@ -204,11 +309,11 @@
 </nav>
 
 
-<div class="container">
-    <h2>{% block title %}{% endblock %}</h2>
+<main class="page container">
+    <h2 class="page-title">{% block title %}{% endblock %}</h2>
 
     {% for message in messages %}
-        <div class="alert alert-success" role="alert">
+        <div class="alert alert-{{ message.tags|default:'info' }}" role="alert">
           {{message}}
         </div>
     {% endfor %}
@@ -221,23 +326,19 @@
             {% block sidebar %}{% endblock %}
         </div>
     </div>
-</div>
+</main>
 
 <!--
     <footer class="footer navbar navbar-fixed-bottom">
 -->
-<footer class="navbar navbar-default">
-    <div class="container-fluid">
-        <div class="collapse navbar-collapse">
-            <ul class="nav navbar-nav">
-                <li>
-                    <a href="{% url 'index' %}">Antragssystem DBFV</a>
-                </li>
-            </ul>
-            <ul class="nav navbar-nav navbar-right">
-                <li><a class="small text-muted" href="{% url 'api-key-request' %}">API-Key beantragen</a></li>
-                <li><a href="{% url 'impressum' %}">Impressum</a></li>
-            </ul>
+<footer class="border-top mt-5 py-4 bg-white">
+    <div class="container d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <a class="text-decoration-none text-body-secondary" href="{% url 'index' %}">
+            Antragssystem DBFV e.V.
+        </a>
+        <div class="d-flex gap-3">
+            <a class="text-decoration-none text-body-secondary" href="{% url 'api-key-request' %}">API-Key beantragen</a>
+            <a class="text-decoration-none text-body-secondary" href="{% url 'impressum' %}">Impressum</a>
         </div>
     </div>
 </footer>

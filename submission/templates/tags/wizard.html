@@ -1,0 +1,104 @@
+{% comment %}
+Wiederverwendbare Wizard-Navigation + Steuerung.
+Muss innerhalb eines Elements mit [data-wizard] stehen. Erwartet:
+  - mehrere Elemente mit Klasse "wizard-step wstep-N" (N = 1..k). Mehrere
+    Elemente mit gleichem wstep-N bilden zusammen einen Schritt.
+  - eine Fortschrittsanzeige .wizard-progress mit einem <li> je Schritt
+  - den Absenden-Button des crispy-Formulars mit Klasse .wizard-submit
+{% endcomment %}
+<noscript>
+    {# Ohne JS: alle Schritte + Absenden zeigen, Wizard-Navigation ausblenden #}
+    <style>
+        .wizard-step { display: block !important; }
+        .wizard-submit { display: inline-block !important; }
+        .wizard-nav { display: none !important; }
+    </style>
+</noscript>
+<div class="wizard-nav">
+    <button type="button" class="btn btn-outline-secondary btn-back" data-wizard-back>
+        <i class="bi bi-arrow-left" aria-hidden="true"></i> Zurück
+    </button>
+    <button type="button" class="btn btn-primary" data-wizard-next>
+        Weiter <i class="bi bi-arrow-right" aria-hidden="true"></i>
+    </button>
+</div>
+
+<script>
+(function () {
+    document.querySelectorAll('[data-wizard]').forEach(function (wiz) {
+        var stepEls = Array.prototype.slice.call(wiz.querySelectorAll('.wizard-step'));
+        function stepKey(el) {
+            var m = /\bwstep-(\d+)\b/.exec(el.className);
+            return m ? m[1] : null;
+        }
+        // eindeutige Schritt-Nummern in Reihenfolge
+        var steps = [];
+        stepEls.forEach(function (el) {
+            var s = stepKey(el);
+            if (s && steps.indexOf(s) === -1) steps.push(s);
+        });
+        steps.sort(function (a, b) { return a - b; });
+        if (!steps.length) return;
+
+        var indicators = Array.prototype.slice.call(wiz.querySelectorAll('.wizard-progress li'));
+        var nextBtn = wiz.querySelector('[data-wizard-next]');
+        var backBtn = wiz.querySelector('[data-wizard-back]');
+        var submitBtn = wiz.querySelector('.wizard-submit');
+        var form = wiz.querySelector('form');
+        // Native Submit-Validierung aus: versteckte Pflichtfelder würden sonst
+        // den finalen Submit blockieren. Django validiert weiterhin serverseitig.
+        if (form) form.setAttribute('novalidate', 'novalidate');
+
+        var current = 0;
+
+        function elementsFor(i) {
+            return stepEls.filter(function (el) { return stepKey(el) === steps[i]; });
+        }
+
+        function render() {
+            stepEls.forEach(function (el) {
+                el.classList.toggle('is-current', stepKey(el) === steps[current]);
+            });
+            indicators.forEach(function (li, idx) {
+                li.classList.toggle('is-active', idx === current);
+                li.classList.toggle('is-done', idx < current);
+            });
+            backBtn.style.visibility = current === 0 ? 'hidden' : 'visible';
+            var last = current === steps.length - 1;
+            nextBtn.style.display = last ? 'none' : '';
+            if (submitBtn) submitBtn.style.display = last ? 'inline-block' : 'none';
+        }
+
+        function validStep(i) {
+            var ok = true;
+            elementsFor(i).forEach(function (el) {
+                el.querySelectorAll('input, select, textarea').forEach(function (field) {
+                    if (ok && !field.checkValidity()) {
+                        field.reportValidity();
+                        ok = false;
+                    }
+                });
+            });
+            return ok;
+        }
+
+        nextBtn.addEventListener('click', function () {
+            if (!validStep(current)) return;
+            if (current < steps.length - 1) { current++; render(); wiz.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+        });
+        backBtn.addEventListener('click', function () {
+            if (current > 0) { current--; render(); wiz.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+        });
+        // Letzten Schritt vor dem Absenden prüfen (Form ist novalidate)
+        if (submitBtn) submitBtn.addEventListener('click', function (e) {
+            if (!validStep(steps.length - 1)) e.preventDefault();
+        });
+
+        // Bei Serverfehlern zum ersten fehlerhaften Schritt springen
+        var errStep = stepEls.find(function (el) { return el.querySelector('.is-invalid, .invalid-feedback'); });
+        if (errStep) current = Math.max(0, steps.indexOf(stepKey(errStep)));
+
+        render();
+    });
+})();
+</script>

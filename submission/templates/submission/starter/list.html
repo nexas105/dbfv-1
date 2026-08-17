@@ -3,6 +3,7 @@
 {% load dbfv_extras %}
 
 {% block title %}Anträge Starterlizenzen{% endblock %}
+{% block browser_title %}Starterlizenzen – DBFV Antragssystem{% endblock %}
 
 {% block scripts %}
 <script src="{% static 'js/jquery.tokeninput.js' %}"></script>
@@ -70,7 +71,7 @@ $(document).ready(function() {
     <input type="text" id="term" name="term" placeholder="Suchbegriff eingeben" class="no-bootstrap-focus">
 
 
-    <div class="well">
+    <div class="p-3 bg-light rounded">
     <p>Klicken Sie auf einen Monat, um die entsprechenden Anträge zu sehen. Die Zahl in
     Klammern zeigt die Anzahl der Anträge aus dem Monat, die für den Serienbrief
     exportiert wurden.</p>
@@ -90,8 +91,8 @@ $(document).ready(function() {
     <div class="mt-3">
     <form action="">
         <h5>Schnellzugriff</h5>
-        <input type="number" id="submission_id" placeholder="Antragsnummer eingeben">
-        <input id="submission_id_submit" class="btn btn-default btn-block" type="submit" value="Zu Antrag gehen">
+        <input type="number" id="submission_id" placeholder="Antragsnummer eingeben" class="form-control mb-2">
+        <input id="submission_id_submit" class="btn btn-secondary w-100" type="submit" value="Zu Antrag gehen">
     </form>
     </div>
 
