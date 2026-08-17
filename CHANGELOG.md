@@ -16,7 +16,10 @@ Format angelehnt an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 - `Dockerfile` (Repo-Root)
   Schlankes Coolify-Image auf `python:3.13-slim` mit gunicorn; TLS terminiert
   Traefik davor. Der Apache/mod_wsgi-Build unter `docker/Dockerfile` bleibt als
-  Upstream-Variante bestehen.
+  Upstream-Variante bestehen. Eigene `node:20`-Build-Stage installiert die
+  Vendor-Assets (bootstrap/jquery/icons) aus `submission/static/package.json`,
+  da `node_modules` gitignored ist und sonst im Image fehlt (führte zu 500 auf
+  allen Seiten mit `base.html`, weil das WhiteNoise-Manifest die Dateien nicht fand).
 - `docker/entrypoint.sh`
   Container-Start: `migrate` und `collectstatic`, danach gunicorn auf `:8000`.
 - `pyproject.toml`, `uv.lock`
