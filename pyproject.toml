@@ -17,6 +17,7 @@ dependencies = [
     "gunicorn~=26.0.0",
     "pyjwt~=2.12.1",
     "reportlab~=5.0.0",
+    "whitenoise~=6.7",
 ]
 
 [dependency-groups]

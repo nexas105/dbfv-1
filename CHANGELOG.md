@@ -6,6 +6,22 @@ Format angelehnt an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
 ## [Unreleased]
 
+### Deployment
+- `dbfv/settings_prod.py`
+  Neues env-getriebenes Produktions-Settings-Modul (aktiv über
+  `DJANGO_SETTINGS_MODULE=dbfv.settings_prod`). `SECRET_KEY`, `ALLOWED_HOSTS`,
+  `CSRF_TRUSTED_ORIGINS`, Static/Media-Pfade und die Datenbank kommen aus der
+  Umgebung. DB: sqlite auf Volume als Default, MySQL/Postgres via `DB_ENGINE`.
+  Static-Auslieferung über WhiteNoise (ManifestStaticFilesStorage).
+- `Dockerfile` (Repo-Root)
+  Schlankes Coolify-Image auf `python:3.13-slim` mit gunicorn; TLS terminiert
+  Traefik davor. Der Apache/mod_wsgi-Build unter `docker/Dockerfile` bleibt als
+  Upstream-Variante bestehen.
+- `docker/entrypoint.sh`
+  Container-Start: `migrate` und `collectstatic`, danach gunicorn auf `:8000`.
+- `pyproject.toml`, `uv.lock`
+  `whitenoise~=6.7` als Abhängigkeit ergänzt.
+
 ### Hinzugefügt
 - REST-API unter `/api/v1/` auf Basis von Django REST Framework, inklusive
   OpenAPI-Schema (`/api/v1/schema/`), Swagger-UI (`/api/v1/docs/`) und ReDoc
